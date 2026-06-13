@@ -118,11 +118,26 @@
 5. 重复直到 Boss HP 归零 或 用户 HP 归零
 6. 胜利：获得大量 XP 和成就徽章
 
+**Boss 战数值设计：**
+- 用户初始 HP：100（所有 Boss 战统一）
+- 每次错误提交扣血：10 HP（即允许 10 次失误）
+- Boss HP：随难度递增（W01 Boss: 30 HP，W05 Boss: 80 HP）
+- 每次正确提交对 Boss 造成固定 10 点伤害
+- 无回血机制，但提供"撤退"选项（放弃本次 Boss 战，不扣连胜）
+- Combo 加成：连续正确提交 3/5 次，伤害提升至 15/20
+
 ### 4.3 学习辅助机制
 - 每个新概念先展示带逐行注释的示例代码
 - 答错后自动显示简短解释（< 2 句话）
 - 连续答错 2 次 → 给出提示；连续答错 3 次 → 显示答案并自动解锁（标记"需复习"）
 - 知识手册可随时查阅已学内容
+
+**"需复习"标记机制：**
+- 被标记的关卡在世界地图上显示特殊图标（如 🔁）
+- 知识手册中对应知识点显示"薄弱"标签
+- 用户可在黑客档案页查看所有"需复习"关卡列表
+- 复习后重新答对 2 次 → 清除标记
+- 不强制复习，但通过图标提示引导用户主动回顾
 
 ## 5. 功能优先级
 
@@ -172,7 +187,9 @@ Boss 关 → 读题 → 写代码 → 验证 → 看结果
 - **样式：** Tailwind CSS
 - **动画：** CSS Animations + Framer Motion
 - **持久化：** localStorage
-- **WASM crate 1 — game-engine（~500KB）：** 玩家状态、战斗计算、进度管理
+- **状态管理：** Zustand（轻量、TypeScript 友好）
+- **WASM crate 1 — game-engine（~500KB，可选）：** XP 等级公式、Boss 战伤害计算；MVP 阶段可用纯 JS 实现，后续按需迁移至 WASM
+- **WASM crate 2 — code-validator（~4-5MB，核心）：** 代码语法验证、AST 模式匹配，必须用 Rust + syn 实现
 
 ### 7.2 选型理由
 - **Vite + React：** 纯前端 SPA 不需要 SSR，Vite 原生 WASM ESM 支持好，启动/HMR 速度最快。React 生态最适合交互式 UI，TypeScript 保证代码质量。
@@ -193,7 +210,23 @@ Boss 关 → 读题 → 写代码 → 验证 → 看结果
    - 检查禁止模式是否出现（如 `unsafe` 在早期关卡）
 4. 返回验证结果（通过/失败 + 具体反馈）
 
-**大小控制：** `syn` 默认包含所有语法特性，可通过 Cargo features 裁剪不需要的部分（仅保留解析功能，去掉代码生成和格式化），将 WASM 体积控制在 2-3MB。
+**错误处理策略（MVP 两层验证）：**
+- **第一层：语法验证（syn AST）** — 检查代码是否可解析为合法 Rust AST，失败则返回"语法错误"提示
+- **第二层：模式匹配** — 检查 AST 是否符合题目要求的模式，失败则返回具体差异（如"缺少 `let` 声明"、"使用了禁止的 `unsafe`"）
+- **编译错误不在 WASM 中处理** — 类型检查、借用检查等语义验证需要完整的 rustc，MVP 阶段不实现，通过精心设计的题目和骨架代码规避
+- **后续迭代**：可引入 `rustc` 的 WASM 编译版本或 `rust-analyzer` 做更深层验证
+
+**大小控制：** `syn` 默认包含所有语法特性，可通过 Cargo features 裁剪不需要的部分（仅保留解析功能，去掉代码生成和格式化），将 WASM 体积控制在 4-5MB。
+
+**技术风险与应对：**
+- `proc-macro2` 在 WASM 环境下存在兼容性问题，需在 `Cargo.toml` 中设置 `default-features = false` 并启用 `wasm` feature
+- 推荐 Cargo.toml 配置：
+  ```toml
+  [dependencies]
+  syn = { version = "2", default-features = false, features = ["parsing", "full"] }
+  proc-macro2 = { version = "1", default-features = false, features = ["wasm"] }
+  ```
+- 备选方案：如 syn 体积过大，可替换为 `tree-sitter-rust`（更小但需额外 WASM 绑定）或手写递归下降解析器
 
 **加载策略：** 应用启动时不加载。进入 Boss 战前，通过 `React.lazy` + `IntersectionObserver` 预加载 WASM 模块，确保用户进入编辑器时已准备就绪。
 
@@ -206,7 +239,7 @@ hackrust/
 │   │   ├── components/    # 通用 UI 组件
 │   │   ├── game/          # WASM 桥接层
 │   │   ├── data/          # 课程内容 JSON
-│   │   ├── store/         # 状态管理
+│   │   ├── store/         # 状态管理（Zustand）
 │   │   └── lib/           # 工具函数
 │   ├── index.html
 │   ├── vite.config.ts
@@ -214,36 +247,36 @@ hackrust/
 │   └── package.json
 │
 ├── wasm/
-│   ├── game-engine/       # 游戏引擎 crate
+│   ├── game-engine/       # 游戏引擎 crate（可选，MVP 阶段用 JS 替代）
 │   │   ├── src/
 │   │   │   ├── lib.rs
-│   │   │   ├── player.rs
-│   │   │   ├── combat.rs
-│   │   │   └── progress.rs
+│   │   │   ├── player.rs  # 玩家属性计算（XP→等级公式、伤害公式）
+│   │   │   ├── combat.rs  # Boss 战数值逻辑
+│   │   │   └── progress.rs # 进度序列化/反序列化
 │   │   └── Cargo.toml
 │   │
-│   └── code-validator/    # 代码验证器 crate
+│   └── code-validator/    # 代码验证器 crate（核心，必须 Rust）
 │       ├── src/
 │       │   ├── lib.rs
-│       │   ├── syntax.rs
-│       │   └── patterns.rs
+│       │   ├── syntax.rs  # syn AST 解析
+│       │   └── patterns.rs # 模式匹配逻辑
 │       └── Cargo.toml
 │
 └── README.md
 ```
 
-### 7.4 数据流
+### 7.5 数据流
 ```
 用户操作 → React 组件
-  ├── (需要游戏逻辑?) → WASM game-engine
+  ├── (需要游戏逻辑?) → JS/Zustand（MVP）或 WASM game-engine（后续）
   ├── (需要代码验证?) → WASM code-validator
   └── 更新 React state → localStorage 持久化
 
 关卡数据 → JSON 文件 → 静态导入 → React 组件渲染
-WASM 状态 → JSON 序列化 → localStorage → 启动时反序列化恢复
+游戏状态 → Zustand store → localStorage → 启动时恢复
 ```
 
-## 8. MVB 范围
+## 8. MVP 范围
 
 ### 8.1 第一阶段（MVP）
 - 3 个页面：世界地图、小关卡答题、Boss 编码战场
@@ -289,12 +322,19 @@ interface Level {
   id: string;           // "w01-l03"
   title: string;        // "可变性"
   type: "choice" | "fill" | "order" | "judge";
-  // 选择题
   question: string;
   code?: string;        // 展示代码块
-  options?: Option[];   // (choice)
   solution: string | string[];
   explanation: string;  // 解释
+  // 选择题
+  options?: Option[];
+  // 填空题：拖拽选项 + 填空位置标记
+  blanks?: string[];    // 可选拖拽项
+  blanksCount?: number; // 填空数量
+  // 排序题：正确顺序的代码行
+  shuffledLines?: string[]; // 打乱后的代码行
+  // 判断题：正确答案
+  judgeAnswer?: boolean;
 }
 
 // Boss 战
@@ -307,5 +347,19 @@ interface BossChallenge {
     forbidden?: string[];    // 禁止出现的模式
     testCases?: TestCase[];  // 测试用例（可选）
   };
+}
+
+// 选项（选择题）
+interface Option {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+}
+
+// 测试用例（Boss 战）
+interface TestCase {
+  input: string;        // 输入值
+  expected: string;     // 期望输出
+  description?: string; // 测试说明
 }
 ```
