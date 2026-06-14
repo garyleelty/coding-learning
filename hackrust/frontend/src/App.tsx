@@ -1,0 +1,21 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { WorldMap } from './pages/WorldMap';
+import { Level } from './pages/Level';
+import { Boss } from './pages/Boss';
+import { Home } from './pages/Home';
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <div className="min-h-screen bg-[#0a0a1a] text-gray-200">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/worlds" element={<WorldMap />} />
+          <Route path="/worlds/:id" element={<WorldMap />} />
+          <Route path="/worlds/:id/level/:n" element={<Level />} />
+          <Route path="/worlds/:id/boss" element={<Boss />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
+  );
+}
