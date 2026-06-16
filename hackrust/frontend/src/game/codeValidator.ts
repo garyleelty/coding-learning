@@ -12,6 +12,34 @@ export interface ValidationRule {
   testCases?: TestCase[];
 }
 
+function unescapeRustString(value: string): string {
+  return value
+    .replace(/\\n/g, '\n')
+    .replace(/\\t/g, '\t')
+    .replace(/\\r/g, '\r')
+    .replace(/\\"/g, '"')
+    .replace(/\\\\/g, '\\');
+}
+
+function extractStaticPrintOutput(code: string): string | null {
+  const outputParts: string[] = [];
+  const printPattern = /\b(print(?:ln)?)!\s*\(\s*(?:r#?"([\s\S]*?)"|"((?:\\.|[^"\\])*)")\s*\)/g;
+
+  let matched = false;
+  let match: RegExpExecArray | null;
+  while ((match = printPattern.exec(code)) !== null) {
+    matched = true;
+    const macroName = match[1];
+    const rawLiteral = match[2] ?? match[3] ?? '';
+    outputParts.push(match[2] !== undefined ? rawLiteral : unescapeRustString(rawLiteral));
+    if (macroName === 'println') {
+      outputParts.push('\n');
+    }
+  }
+
+  return matched ? outputParts.join('').replace(/\n$/, '') : null;
+}
+
 /**
  * Validates Rust code against a set of rules.
  *
@@ -60,7 +88,7 @@ export function validateCode(code: string, rules: ValidationRule): ValidationRes
     }
   }
 
-  // 5. Test cases – MVP: verify println!/print! output macros exist
+  // 5. Test cases – MVP: verify println!/print! output macros and expected output literals
   if (rules.testCases && rules.testCases.length > 0) {
     const hasPrint = code.includes('println!') || code.includes('print!');
     if (!hasPrint) {
@@ -83,12 +111,33 @@ export function validateCode(code: string, rules: ValidationRule): ValidationRes
 
     details.push(`✓ 输出格式检查通过 (${printMatches.length} 处输出)`);
 
-    // Check each test case has a description or is referenced
+    const staticOutput = extractStaticPrintOutput(code);
+    if (staticOutput === null) {
+      return {
+        success: false,
+        message: '暂不支持动态输出校验',
+        details: ['请使用简单的 print!/println! 字符串字面量完成本次 Boss 输出'],
+      };
+    }
+
+    // Static stdout simulation for simple print!/println!("literal") Boss answers.
     for (let i = 0; i < rules.testCases.length; i++) {
       const tc = rules.testCases[i];
+      if (staticOutput.trimEnd() !== tc.expected.trimEnd()) {
+        return {
+          success: false,
+          message: '输出内容不匹配',
+          details: [
+            `测试用例 ${i + 1} 期望输出:\n${tc.expected}`,
+            `当前模拟输出:\n${staticOutput}`,
+          ],
+        };
+      }
+
       if (tc.description) {
         details.push(`  ✓ 测试用例 ${i + 1}: ${tc.description}`);
       }
+      details.push(`  ✓ 模拟输出匹配`);
     }
   }
 

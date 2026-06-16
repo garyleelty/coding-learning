@@ -1,10 +1,11 @@
 import { useMemo, useState, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getWorld } from '../data/worlds';
+import type { World } from '../types';
 import { calcBossHP, calcDamage } from '../game/damageCalc';
-import { checkSyntax, validateCode } from '../game/codeValidator';
 import { useGameStore, selectWorldProgress } from '../store/gameStore';
 import { CodeBlock, Feedback, HPBar, ComboIndicator } from '../components';
+import { compileRust } from '../lib/api';
 
 type FeedbackState = {
   type: 'correct' | 'wrong' | 'info';
@@ -15,86 +16,14 @@ type FeedbackState = {
 
 export function Boss() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const worldId = id || '';
   const world = useMemo(() => getWorld(worldId), [worldId]);
-  const gameStore = useGameStore();
   const worldProgress = useGameStore(selectWorldProgress(worldId));
-
-  const maxBossHp = useMemo(() => (world ? calcBossHP(world.phase) : 0), [world]);
-  const [code, setCode] = useState(() => world?.boss.template ?? '');
-  const [bossHp, setBossHp] = useState(maxBossHp);
-  const [feedback, setFeedback] = useState<FeedbackState | null>(null);
 
   const allLevelsCompleted = world
     ? world.levels.every((level) => worldProgress?.levels[level.id]?.completed)
     : false;
   const bossDefeated = worldProgress?.bossDefeated ?? false;
-
-  const resetBattle = useCallback(() => {
-    setFeedback(null);
-    setBossHp(maxBossHp);
-    gameStore.heal(gameStore.player.maxHp);
-  }, [gameStore, maxBossHp]);
-
-  const handleSubmit = useCallback(() => {
-    if (!world) return;
-
-    const syntax = checkSyntax(code);
-    if (!syntax.success) {
-      const nextPlayerHp = Math.max(0, gameStore.player.hp - 10);
-      gameStore.resetCombo();
-      gameStore.takeDamage(10);
-      setFeedback({
-        type: 'wrong',
-        message: nextPlayerHp === 0 ? '系统过载' : syntax.message,
-        explanation:
-          nextPlayerHp === 0
-            ? `${syntax.details?.join('\n') ?? syntax.message}\nHP 已归零。重置战斗后继续尝试。`
-            : syntax.details?.join('\n'),
-      });
-      return;
-    }
-
-    const validation = validateCode(code, world.boss.validation);
-    if (!validation.success) {
-      const nextPlayerHp = Math.max(0, gameStore.player.hp - 10);
-      gameStore.resetCombo();
-      gameStore.takeDamage(10);
-      setFeedback({
-        type: 'wrong',
-        message: nextPlayerHp === 0 ? '系统过载' : validation.message,
-        explanation:
-          nextPlayerHp === 0
-            ? `${validation.details?.join('\n') ?? validation.message}\nHP 已归零。重置战斗后继续尝试。`
-            : validation.details?.join('\n'),
-      });
-      return;
-    }
-
-    const damage = calcDamage(gameStore.player.combo);
-    const nextHp = Math.max(0, bossHp - damage);
-    setBossHp(nextHp);
-    gameStore.incrementCombo();
-
-    if (nextHp === 0) {
-      gameStore.addXp(200);
-      gameStore.defeatBoss(world.id);
-      setFeedback({
-        type: 'correct',
-        message: 'Boss 已击败！',
-        explanation: `验证通过，造成 ${damage} 点伤害。获得 200 XP。`,
-        defeated: true,
-      });
-      return;
-    }
-
-    setFeedback({
-      type: 'info',
-      message: `命中 Boss，造成 ${damage} 点伤害`,
-      explanation: validation.details?.join('\n'),
-    });
-  }, [bossHp, code, gameStore, world]);
 
   if (!world) {
     return (
@@ -130,6 +59,141 @@ export function Boss() {
     );
   }
 
+  return <BossBattle key={world.id} world={world} bossDefeated={bossDefeated} />;
+}
+
+function BossBattle({
+  world,
+  bossDefeated,
+}: {
+  world: World;
+  bossDefeated: boolean;
+}) {
+  const navigate = useNavigate();
+  const player = useGameStore((s) => s.player);
+  const addXp = useGameStore((s) => s.addXp);
+  const incrementCombo = useGameStore((s) => s.incrementCombo);
+  const resetCombo = useGameStore((s) => s.resetCombo);
+  const takeDamage = useGameStore((s) => s.takeDamage);
+  const heal = useGameStore((s) => s.heal);
+  const defeatBoss = useGameStore((s) => s.defeatBoss);
+
+  const maxBossHp = useMemo(() => calcBossHP(world.phase), [world.phase]);
+  const [code, setCode] = useState(() => world.boss.template);
+  const [bossHp, setBossHp] = useState(maxBossHp);
+  const [feedback, setFeedback] = useState<FeedbackState | null>(null);
+
+  const resetBattle = useCallback(() => {
+    setFeedback(null);
+    setBossHp(maxBossHp);
+    heal(player.maxHp);
+  }, [heal, maxBossHp, player.maxHp]);
+
+  const [isCompiling, setIsCompiling] = useState(false);
+
+  const handleSubmit = useCallback(async () => {
+    if (isCompiling) return;
+    
+    setIsCompiling(true);
+    setFeedback({
+      type: 'info',
+      message: '编译中...',
+      explanation: '正在调用 rustc 编译你的代码...',
+    });
+
+    try {
+      // Get expected output from validation rules
+      const expectedOutput = world.boss.validation.testCases?.[0]?.expected;
+      
+      // Call backend API to compile and run the code
+      const result = await compileRust(code, expectedOutput);
+
+      // Handle compilation errors
+      if (result.compilationErrors) {
+        const nextPlayerHp = Math.max(0, player.hp - 10);
+        resetCombo();
+        takeDamage(10);
+        setFeedback({
+          type: 'wrong',
+          message: nextPlayerHp === 0 ? '系统过载' : '编译错误',
+          explanation:
+            nextPlayerHp === 0
+              ? `${result.compilationErrors}\nHP 已归零。重置战斗后继续尝试。`
+              : result.compilationErrors,
+        });
+        return;
+      }
+
+      // Handle runtime errors
+      if (result.runtimeErrors) {
+        const nextPlayerHp = Math.max(0, player.hp - 10);
+        resetCombo();
+        takeDamage(10);
+        setFeedback({
+          type: 'wrong',
+          message: nextPlayerHp === 0 ? '系统过载' : '运行时错误',
+          explanation:
+            nextPlayerHp === 0
+              ? `${result.runtimeErrors}\nHP 已归零。重置战斗后继续尝试。`
+              : result.runtimeErrors,
+        });
+        return;
+      }
+
+      // Handle output mismatch
+      if (result.matchExpected === false) {
+        const nextPlayerHp = Math.max(0, player.hp - 10);
+        resetCombo();
+        takeDamage(10);
+        setFeedback({
+          type: 'wrong',
+          message: nextPlayerHp === 0 ? '系统过载' : '输出不匹配',
+          explanation:
+            nextPlayerHp === 0
+              ? `期望输出:\n${expectedOutput}\n\n实际输出:\n${result.output}\n\nHP 已归零。重置战斗后继续尝试。`
+              : `期望输出:\n${expectedOutput}\n\n实际输出:\n${result.output}`,
+        });
+        return;
+      }
+
+      // Success - deal damage to boss
+      const damage = calcDamage(player.combo);
+      const nextHp = Math.max(0, bossHp - damage);
+      setBossHp(nextHp);
+      incrementCombo();
+
+      if (nextHp === 0) {
+        const bossReward = 200;
+        const comboAfterHit = player.combo + 1;
+        const multiplier = comboAfterHit >= 10 ? 2 : comboAfterHit >= 5 ? 1.5 : comboAfterHit >= 3 ? 1.2 : 1;
+        const actualXp = Math.floor(bossReward * multiplier);
+        addXp(bossReward);
+        defeatBoss(world.id);
+        setFeedback({
+          type: 'correct',
+          message: 'Boss 已击败！',
+          explanation: `编译通过，造成 ${damage} 点伤害。获得 ${actualXp} XP。`,
+          defeated: true,
+        });
+        return;
+      }
+
+      setFeedback({
+        type: 'info',
+        message: `命中 Boss，造成 ${damage} 点伤害`,
+        explanation: result.output ? `程序输出:\n${result.output}` : undefined,
+      });
+    } catch (error) {
+      setFeedback({
+        type: 'wrong',
+        message: '请求失败',
+        explanation: `无法连接到编译服务器: ${error instanceof Error ? error.message : '未知错误'}`,
+      });
+    } finally {
+      setIsCompiling(false);
+    }
+  }, [addXp, bossHp, code, defeatBoss, incrementCombo, isCompiling, player.combo, player.hp, resetCombo, takeDamage, world]);
+
   return (
     <div className="relative min-h-screen bg-[#0a0a1a] text-gray-200">
       <div
@@ -156,7 +220,7 @@ export function Boss() {
           <span className="text-lg">←</span>
           <span>返回</span>
         </Link>
-        <ComboIndicator combo={gameStore.player.combo} />
+        <ComboIndicator combo={player.combo} />
       </div>
 
       <main className="relative z-10 mx-auto grid max-w-5xl gap-6 px-4 py-8 lg:grid-cols-[1fr_22rem]">
@@ -194,14 +258,14 @@ export function Boss() {
           <div className="mt-6 flex flex-wrap gap-3">
             <button
               onClick={handleSubmit}
-              disabled={bossDefeated}
+              disabled={bossDefeated || isCompiling}
               className={`rounded px-8 py-3 font-mono font-bold transition-all ${
-                bossDefeated
+                bossDefeated || isCompiling
                   ? 'cursor-not-allowed bg-gray-800 text-gray-600'
                   : 'cursor-pointer bg-cyber-red text-white hover:shadow-[0_0_20px_rgba(233,69,96,0.5)]'
               }`}
             >
-              {bossDefeated ? '已击败' : '执行攻击'}
+              {bossDefeated ? '已击败' : isCompiling ? '编译中...' : '执行攻击'}
             </button>
             <button
               onClick={() => setCode(world.boss.template)}
@@ -219,12 +283,12 @@ export function Boss() {
               <div className="flex justify-between">
                 <span>你的 HP</span>
                 <span className="text-cyber-glow">
-                  {gameStore.player.hp}/{gameStore.player.maxHp}
+                  {player.hp}/{player.maxHp}
                 </span>
               </div>
               <div className="mt-2 flex justify-between">
                 <span>本次伤害</span>
-                <span className="text-cyber-red">{calcDamage(gameStore.player.combo)}</span>
+                <span className="text-cyber-red">{calcDamage(player.combo)}</span>
               </div>
             </div>
           </div>
@@ -270,7 +334,7 @@ export function Boss() {
           explanation={feedback.explanation}
           onRetry={
             feedback.type === 'wrong'
-              ? gameStore.player.hp === 0
+              ? player.hp === 0
                 ? resetBattle
                 : () => setFeedback(null)
               : undefined

@@ -74,14 +74,14 @@ export function Home() {
 
         {/* Subtitle */}
         <p className="mt-6 font-mono text-lg text-gray-400 tracking-wider">
-          {'>'} 赛博黑客 <span className="text-gray-600">·</span> Rust 学习游戏
+          {'>'} 从零开始 <span className="text-gray-600">·</span> Rust 学习游戏
         </p>
 
         {/* Tagline */}
         <p className="mt-3 max-w-md font-mono text-sm leading-relaxed text-gray-500">
-          Master the art of systems programming. Exploit vulnerabilities.
+          先看例子，再做小题，最后完成一个小程序。
           <br />
-          Conquer the terminal. Become the ultimate cyber-decker.
+          不需要基础，跟着每一步慢慢来。
         </p>
 
         {/* Action buttons */}
@@ -95,7 +95,7 @@ export function Home() {
             {/* Button content */}
             <span className="relative flex items-center gap-3">
               <span className="text-gray-500">{'>'}</span>
-              <span>{hasProgress ? '继续入侵' : '开始入侵'}</span>
+              <span>{hasProgress ? '继续学习' : '开始学习'}</span>
               <span className="inline-block w-2 h-4 bg-[#00ff9f] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </span>
           </Link>
@@ -116,7 +116,7 @@ export function Home() {
               <span className="flex-1 border-t border-gray-800" />
             </div>
 
-            <div className="grid grid-cols-3 gap-3 font-mono text-sm">
+            <div className="grid grid-cols-2 gap-3 font-mono text-sm sm:grid-cols-4">
               <div className="rounded border border-gray-800/60 bg-white/[0.02] px-3 py-3 transition-colors hover:border-[#00ff9f]/20">
                 <div className="text-xs text-gray-600">LEVEL</div>
                 <div className="mt-1 text-lg font-bold text-[#00ff9f]">
@@ -136,6 +136,13 @@ export function Home() {
                   <span className="text-xs text-gray-600">
                     /{totalBossesDefeated}
                   </span>
+                </div>
+              </div>
+              <div className="rounded border border-gray-800/60 bg-white/[0.02] px-3 py-3 transition-colors hover:border-[#00ff9f]/20">
+                <div className="text-xs text-gray-600">STREAK</div>
+                <div className="mt-1 text-lg font-bold text-[#00ff9f]">
+                  {player.streak}
+                  <span className="text-xs text-gray-600">d</span>
                 </div>
               </div>
             </div>

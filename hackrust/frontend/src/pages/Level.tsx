@@ -8,7 +8,11 @@ import { CodeBlock, Feedback, ComboIndicator } from '../components';
 export function Level() {
   const { id, n } = useParams<{ id: string; n: string }>();
   const navigate = useNavigate();
-  const gameStore = useGameStore();
+  const playerCombo = useGameStore((s) => s.player.combo);
+  const addXp = useGameStore((s) => s.addXp);
+  const incrementCombo = useGameStore((s) => s.incrementCombo);
+  const resetCombo = useGameStore((s) => s.resetCombo);
+  const completeLevel = useGameStore((s) => s.completeLevel);
 
   const worldId = id || '';
   const levelNum = parseInt(n || '1', 10);
@@ -20,7 +24,7 @@ export function Level() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | boolean | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const [sequence, setSequence] = useState<string[]>([]);
+  const [sequence, setSequence] = useState<number[]>([]);
 
   // Fill-blank state
   const blanksCount = useMemo(() => {
@@ -30,7 +34,7 @@ export function Level() {
     return Math.max(0, level.code.split('___').length - 1);
   }, [level]);
 
-  const [fillSlots, setFillSlots] = useState<(string | null)[]>([]);
+  const [fillSlots, setFillSlots] = useState<number[]>([]);
 
   // Reset all local state when navigating to a different level
   useEffect(() => {
@@ -39,7 +43,7 @@ export function Level() {
       setIsCorrect(false);
       setSelectedAnswer(null);
       setSequence([]);
-      setFillSlots(Array(Math.max(blanksCount, 0)).fill(null));
+      setFillSlots([]);
     });
 
     return () => cancelAnimationFrame(frame);
@@ -54,15 +58,15 @@ export function Level() {
       case 'choice':
         return selectedAnswer !== null;
       case 'fill':
-        return fillSlots.length > 0 && fillSlots.every((s) => s !== null);
+        return fillSlots.length === blanksCount;
       case 'order':
-        return sequence.length > 0;
+        return level.shuffledLines ? sequence.length === level.shuffledLines.length : false;
       case 'judge':
         return selectedAnswer !== null;
       default:
         return false;
     }
-  }, [level, submitted, selectedAnswer, fillSlots, sequence]);
+  }, [blanksCount, level, submitted, selectedAnswer, fillSlots, sequence]);
 
   // ── Fill: split code into segments around ___ ───────────────
   const codeParts = useMemo(() => {
@@ -73,35 +77,31 @@ export function Level() {
   // Lines available for ordering (not yet placed)
   const remainingLines = useMemo(() => {
     if (!level || level.type !== 'order') return [];
-    return (level.shuffledLines || []).filter((line) => !sequence.includes(line));
+    return (level.shuffledLines || [])
+      .map((line, index) => ({ line, index }))
+      .filter((item) => !sequence.includes(item.index));
   }, [level, sequence]);
 
   // ── Handlers ────────────────────────────────────────────────
 
   const handlePillClick = useCallback(
-    (value: string) => {
-      const idx = fillSlots.findIndex((s) => s === null);
-      if (idx === -1) return;
-      const next = [...fillSlots];
-      next[idx] = value;
-      setFillSlots(next);
+    (optionIndex: number) => {
+      if (fillSlots.length >= blanksCount || fillSlots.includes(optionIndex)) return;
+      setFillSlots((prev) => [...prev, optionIndex]);
     },
-    [fillSlots],
+    [blanksCount, fillSlots],
   );
 
   const handleSlotClick = useCallback(
     (index: number) => {
-      if (fillSlots[index] === null) return;
-      const next = [...fillSlots];
-      next[index] = null;
-      setFillSlots(next);
+      setFillSlots((prev) => prev.filter((_, i) => i !== index));
     },
-    [fillSlots],
+    [],
   );
 
   const handleOrderPlace = useCallback(
-    (line: string) => {
-      setSequence((prev) => [...prev, line]);
+    (lineIndex: number) => {
+      setSequence((prev) => (prev.includes(lineIndex) ? prev : [...prev, lineIndex]));
     },
     [],
   );
@@ -122,15 +122,16 @@ export function Level() {
         correct = selectedAnswer === level.solution;
         break;
       case 'fill': {
-        const filled = fillSlots.join('');
+        const filled = fillSlots.map((optionIndex) => level.blanks?.[optionIndex] ?? '').join('');
         correct = filled === level.solution;
         break;
       }
       case 'order': {
         const solution = level.solution as string[];
+        const orderedLines = sequence.map((lineIndex) => level.shuffledLines?.[lineIndex] ?? '');
         correct =
-          sequence.length === solution.length &&
-          sequence.every((item, i) => item === solution[i]);
+          orderedLines.length === solution.length &&
+          orderedLines.every((item, i) => item === solution[i]);
         break;
       }
       case 'judge':
@@ -140,16 +141,16 @@ export function Level() {
 
     if (correct) {
       const xpAmount = level.type === 'fill' || level.type === 'order' ? 75 : 50;
-      gameStore.addXp(xpAmount);
-      gameStore.incrementCombo();
-      gameStore.completeLevel(worldId, level.id, 100);
+      addXp(xpAmount);
+      incrementCombo();
+      completeLevel(worldId, level.id, 100);
       setIsCorrect(true);
     } else {
-      gameStore.resetCombo();
+      resetCombo();
       setIsCorrect(false);
     }
     setSubmitted(true);
-  }, [level, selectedAnswer, fillSlots, sequence, worldId, gameStore]);
+  }, [addXp, completeLevel, fillSlots, incrementCombo, level, resetCombo, selectedAnswer, sequence, worldId]);
 
   const handleRetry = useCallback(() => {
     setSubmitted(false);
@@ -240,7 +241,7 @@ export function Level() {
             <span className="text-gray-600">/{world.levels.length}</span> 关
           </span>
           <div className="hidden sm:block">
-            <ComboIndicator combo={gameStore.player.combo} />
+            <ComboIndicator combo={playerCombo} />
           </div>
         </div>
       </div>
@@ -256,6 +257,17 @@ export function Level() {
         <h1 className="font-mono text-2xl font-bold text-white mb-8">
           {level.title}
         </h1>
+
+        {level.lesson && (
+          <div className="mb-6 rounded-lg border border-[#00ff9f]/20 bg-[#00ff9f]/5 p-4">
+            <div className="mb-2 font-mono text-xs font-bold tracking-widest text-[#00ff9f]">
+              先学一下
+            </div>
+            <p className="text-sm leading-relaxed text-gray-300 whitespace-pre-wrap">
+              {level.lesson}
+            </p>
+          </div>
+        )}
 
         {/* Question */}
         <div className="mb-8">
@@ -329,12 +341,12 @@ export function Level() {
                         <span
                           onClick={() => !submitted && handleSlotClick(i)}
                           className={`inline-block min-w-[3rem] px-1.5 mx-0.5 rounded text-center border border-dashed transition-all cursor-pointer ${
-                            fillSlots[i]
+                            fillSlots[i] !== undefined
                               ? 'border-[#00ff9f]/60 bg-[#00ff9f]/20 text-[#00ff9f]'
                               : 'border-gray-600 bg-gray-900 text-gray-500 hover:border-gray-400'
                           }`}
                         >
-                          {fillSlots[i] || '___'}
+                          {fillSlots[i] !== undefined ? level.blanks?.[fillSlots[i]] : '___'}
                         </span>
                       )}
                     </span>
@@ -353,12 +365,12 @@ export function Level() {
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {level.blanks.map((pill, i) => {
-                    const isUsed = fillSlots.includes(pill);
+                    const isUsed = fillSlots.includes(i);
                     return (
                       <button
                         key={i}
                         onClick={() => {
-                          if (!submitted && !isUsed) handlePillClick(pill);
+                          if (!submitted && !isUsed) handlePillClick(i);
                         }}
                         disabled={submitted || isUsed}
                         className={`px-4 py-2 rounded font-mono text-sm border transition-all ${
@@ -391,17 +403,17 @@ export function Level() {
                     所有代码行已添加
                   </span>
                 )}
-                {remainingLines.map((line, i) => (
+                {remainingLines.map((item) => (
                   <button
-                    key={`avail-${i}`}
-                    onClick={() => !submitted && handleOrderPlace(line)}
+                    key={`avail-${item.index}`}
+                    onClick={() => !submitted && handleOrderPlace(item.index)}
                     disabled={submitted}
                     className={`px-4 py-2 rounded font-mono text-xs border border-gray-700/60 bg-gray-900/50 text-gray-300 hover:border-[#00ff9f]/40 hover:bg-[#00ff9f]/5 transition-all ${
                       submitted ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                     }`}
                   >
                     <span className="text-gray-600 mr-1">+</span>
-                    {line}
+                    {item.line}
                   </button>
                 ))}
               </div>
@@ -418,7 +430,7 @@ export function Level() {
                 </div>
               ) : (
                 <div className="space-y-1">
-                  {sequence.map((line, i) => (
+                  {sequence.map((lineIndex, i) => (
                     <div
                       key={`seq-${i}`}
                       onClick={() => !submitted && handleOrderRemove(i)}
@@ -429,7 +441,7 @@ export function Level() {
                       <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#00ff9f]/20 text-[#00ff9f] flex items-center justify-center text-[10px] font-bold">
                         {i + 1}
                       </span>
-                      <code className="flex-1">{line}</code>
+                      <code className="flex-1">{level.shuffledLines?.[lineIndex]}</code>
                       {!submitted && (
                         <span className="text-xs text-gray-600 hover:text-red-400 transition-colors">
                           ✕
@@ -491,9 +503,9 @@ export function Level() {
         </div>
 
         {/* ── Combo (mobile) ────────────────────────────────── */}
-        {gameStore.player.combo > 0 && (
+        {playerCombo > 0 && (
           <div className="flex justify-center mt-6 sm:hidden">
-            <ComboIndicator combo={gameStore.player.combo} />
+            <ComboIndicator combo={playerCombo} />
           </div>
         )}
       </div>
@@ -503,7 +515,11 @@ export function Level() {
         <Feedback
           type={isCorrect ? 'correct' : 'wrong'}
           message={isCorrect ? '回答正确！' : '回答错误'}
-          explanation={isCorrect ? undefined : level.explanation}
+          explanation={
+            isCorrect
+              ? level.explanation
+              : `${level.explanation}${level.hint ? `\n\n提示：${level.hint}` : ''}`
+          }
           onNext={isCorrect ? handleNext : undefined}
           onRetry={!isCorrect ? handleRetry : undefined}
         />

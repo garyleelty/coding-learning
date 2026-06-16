@@ -22,6 +22,8 @@ export interface Level {
   id: string;
   title: string;
   type: LevelType;
+  lesson?: string;
+  hint?: string;
   question: string;
   code?: string;
   solution: string | string[];

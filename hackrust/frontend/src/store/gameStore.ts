@@ -17,6 +17,27 @@ function calcLevel(xp: number): number {
   return Math.floor(Math.sqrt(xp / 100)) + 1;
 }
 
+function getDayKey(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+function calcStreak(lastPlayDate: string | null, currentStreak: number): number {
+  if (!lastPlayDate) return 1;
+
+  const last = new Date(lastPlayDate);
+  const now = new Date();
+  const lastDay = getDayKey(last);
+  const today = getDayKey(now);
+  if (lastDay === today) return Math.max(1, currentStreak);
+
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const lastUtc = Date.UTC(last.getUTCFullYear(), last.getUTCMonth(), last.getUTCDate());
+  const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const diffDays = Math.round((todayUtc - lastUtc) / msPerDay);
+
+  return diffDays === 1 ? currentStreak + 1 : 1;
+}
+
 export function xpForLevel(level: number): number {
   return (level - 1) * (level - 1) * 100;
 }
@@ -50,12 +71,14 @@ export const useGameStore = create<GameSave & GameActions>()(
           const finalXp = Math.floor(amount * comboMultiplier);
           const newXp = state.player.xp + finalXp;
           const newLevel = calcLevel(newXp);
+          const now = new Date().toISOString();
           return {
             player: {
               ...state.player,
               xp: newXp,
               level: newLevel,
-              lastPlayDate: new Date().toISOString(),
+              streak: calcStreak(state.player.lastPlayDate, state.player.streak),
+              lastPlayDate: now,
             },
           };
         });
