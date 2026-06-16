@@ -156,6 +156,7 @@ export function validateCode(code: string, rules: ValidationRule): ValidationRes
  * - Balanced parentheses ()
  * - Non-empty fn main() body
  * - Presence of fn keyword
+ * - println/print without ! (common mistake)
  */
 export function checkSyntax(code: string): ValidationResult {
   if (!code || code.trim().length === 0) {
@@ -168,6 +169,19 @@ export function checkSyntax(code: string): ValidationResult {
 
   const details: string[] = [];
   let hasError = false;
+
+  // --- Check for println/print without ! (common mistake) ---
+  const printWithoutBang = code.match(/\bprintln\s*\(/g);
+  if (printWithoutBang) {
+    details.push('println 缺少 ! 号，应为 println!()');
+    hasError = true;
+  }
+  
+  const printWithoutBang2 = code.match(/(?<![!])\bprint\s*\(/g);
+  if (printWithoutBang2 && !code.includes('print!')) {
+    details.push('print 缺少 ! 号，应为 print!()');
+    hasError = true;
+  }
 
   // --- Balanced curly braces ---
   let braceCount = 0;
