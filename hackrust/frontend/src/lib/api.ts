@@ -23,6 +23,9 @@ async function compileViaPlayground(code: string): Promise<CompileResult> {
       edition: '2021',
       mode: 'debug',
       channel: 'stable',
+      crateType: 'bin',
+      tests: false,
+      backtrace: false,
     }),
   });
 
@@ -35,11 +38,18 @@ async function compileViaPlayground(code: string): Promise<CompileResult> {
   const stderr = data.stderr || '';
   const stdout = data.stdout || '';
 
+  // Filter out compilation noise from stderr
+  const cleanStderr = stderr
+    .replace(/^\s*Compiling.*$/gm, '')
+    .replace(/^\s*Finished.*$/gm, '')
+    .replace(/^\s*Running.*$/gm, '')
+    .trim();
+
   return {
     success,
     output: stdout || null,
-    compilationErrors: !success && stderr ? stderr : null,
-    runtimeErrors: success && stderr ? stderr : null,
+    compilationErrors: !success && cleanStderr ? cleanStderr : null,
+    runtimeErrors: success && cleanStderr ? cleanStderr : null,
     matchExpected: null,
   };
 }
