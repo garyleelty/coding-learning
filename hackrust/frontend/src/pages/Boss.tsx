@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getWorld } from '../data/worlds';
 import type { World } from '../types';
 import { calcBossHP, calcDamage } from '../game/damageCalc';
+import { checkSyntax, validateCode } from '../game/codeValidator';
 import { useGameStore, selectWorldProgress } from '../store/gameStore';
 import { CodeBlock, Feedback, HPBar, ComboIndicator } from '../components';
 import { compileRust } from '../lib/api';
@@ -98,15 +99,34 @@ function BossBattle({
     setFeedback({
       type: 'info',
       message: '编译中...',
-      explanation: '正在调用 rustc 编译你的代码...',
+      explanation: '正在验证你的代码...',
     });
 
     try {
       // Get expected output from validation rules
       const expectedOutput = world.boss.validation.testCases?.[0]?.expected;
       
-      // Call backend API to compile and run the code
-      const result = await compileRust(code, expectedOutput);
+      // Try backend API first, fallback to local validation
+      let result;
+      let isOnlineMode = false;
+      
+      try {
+        result = await compileRust(code, expectedOutput);
+        isOnlineMode = true;
+      } catch {
+        // Backend not available, use local validation
+        const syntax = checkSyntax(code);
+        if (!syntax.success) {
+          result = { success: false, compilationErrors: syntax.details?.join('\n') || syntax.message, output: null, runtimeErrors: null, matchExpected: null };
+        } else {
+          const validation = validateCode(code, world.boss.validation);
+          if (!validation.success) {
+            result = { success: false, compilationErrors: validation.details?.join('\n') || validation.message, output: null, runtimeErrors: null, matchExpected: null };
+          } else {
+            result = { success: true, output: expectedOutput || '', compilationErrors: null, runtimeErrors: null, matchExpected: true };
+          }
+        }
+      }
 
       // Handle compilation errors
       if (result.compilationErrors) {
@@ -172,7 +192,7 @@ function BossBattle({
         setFeedback({
           type: 'correct',
           message: 'Boss 已击败！',
-          explanation: `编译通过，造成 ${damage} 点伤害。获得 ${actualXp} XP。`,
+          explanation: `验证通过，造成 ${damage} 点伤害。获得 ${actualXp} XP。${isOnlineMode ? '' : ' (离线模式)'}`,
           defeated: true,
         });
         return;
@@ -181,13 +201,13 @@ function BossBattle({
       setFeedback({
         type: 'info',
         message: `命中 Boss，造成 ${damage} 点伤害`,
-        explanation: result.output ? `程序输出:\n${result.output}` : undefined,
+        explanation: isOnlineMode && result.output ? `程序输出:\n${result.output}` : undefined,
       });
     } catch (error) {
       setFeedback({
         type: 'wrong',
-        message: '请求失败',
-        explanation: `无法连接到编译服务器: ${error instanceof Error ? error.message : '未知错误'}`,
+        message: '验证失败',
+        explanation: `代码验证出错: ${error instanceof Error ? error.message : '未知错误'}`,
       });
     } finally {
       setIsCompiling(false);
