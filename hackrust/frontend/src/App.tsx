@@ -5,8 +5,10 @@ import { Boss } from './pages/Boss';
 import { Home } from './pages/Home';
 
 export default function App() {
+  const basename = import.meta.env.BASE_URL?.replace(/\/$/, '') || '';
+  
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <div className="min-h-screen bg-[#0a0a1a] text-gray-200">
         <Routes>
           <Route path="/" element={<Home />} />
