@@ -357,24 +357,317 @@ impl EvalContext {
         Ok(v)
     }
 
-    fn eval_call(&mut self, _func: &Expr, _args: &[Expr]) -> Result<Value, String> {
-        Err("eval_call not yet implemented".to_string())
+    fn eval_call(&mut self, func: &Expr, args: &[Expr]) -> Result<Value, String> {
+        match func {
+            Expr::Ident(name) if crate::stdlib::is_print_macro(name).is_some() => {
+                self.eval_builtin_macro(func, args)
+            }
+            Expr::Ident(name) => {
+                if let Some(f) = self.functions.iter().find(|f| f.name == *name).cloned() {
+                    let arg_vals: Result<Vec<Value>, String> = args.iter().map(|a| self.eval_expr(a)).collect();
+                    self.call_function(&f, &arg_vals?)
+                } else if let Some(val) = self.scope.get(name) {
+                    match val {
+                        Value::Fn(fv) => {
+                            if let Some(f) = self.functions.iter().find(|f| f.name == fv.name).cloned() {
+                                let arg_vals: Result<Vec<Value>, String> = args.iter().map(|a| self.eval_expr(a)).collect();
+                                self.call_function(&f, &arg_vals?)
+                            } else {
+                                Err(format!("function not found: {}", name))
+                            }
+                        }
+                        Value::Closure(_) => {
+                            Err(format!("closure {} requires inline call", name))
+                        }
+                        _ => Err(format!("`{}` is not callable", name)),
+                    }
+                } else {
+                    Err(format!("undefined function: {}", name))
+                }
+            }
+            Expr::Path(path) => {
+                let segs: Vec<&str> = path.iter().map(|s| s.as_str()).collect();
+                match segs.as_slice() {
+                    ["HashMap", "new"] => Ok(Value::HashMap(std::collections::HashMap::new())),
+                    ["String", "from"] => {
+                        let arg = self.eval_expr(&args[0])?;
+                        match arg {
+                            Value::String(s) => Ok(Value::String(s)),
+                            _ => Err("String::from requires string argument".to_string()),
+                        }
+                    }
+                    ["Vec", "new"] => Ok(Value::Vec(vec![])),
+                    _ => Err(format!("unsupported associated function: {:?}", path)),
+                }
+            }
+            Expr::Lambda(params, body) => {
+                let arg_vals: Result<Vec<Value>, String> = args.iter().map(|a| self.eval_expr(a)).collect();
+                let arg_vals = arg_vals?;
+                self.scope.push_frame();
+                for (i, pname) in params.iter().enumerate() {
+                    self.scope.define(pname, arg_vals.get(i).cloned().unwrap_or(Value::Unit));
+                }
+                let result = self.eval_expr(body);
+                self.scope.pop_frame();
+                result
+            }
+            _ => Err("not callable".to_string()),
+        }
     }
 
-    fn eval_method_call(&mut self, _receiver: &Expr, _method: &str, _args: &[Expr]) -> Result<Value, String> {
-        Err("eval_method_call not yet implemented".to_string())
+    fn eval_builtin_macro(&mut self, func: &Expr, args: &[Expr]) -> Result<Value, String> {
+        let name = match func { Expr::Ident(n) => n.as_str(), _ => "" };
+
+        match name {
+            "println!" | "print!" => {
+                let format_lit = match &args[0] {
+                    Expr::Literal(Literal::String(s)) => s.clone(),
+                    _ => return Err("println!/print! requires string literal as first argument".to_string()),
+                };
+                let arg_vals: Result<Vec<Value>, String> = args[1..].iter().map(|a| self.eval_expr(a)).collect();
+                let arg_vals = arg_vals?;
+                let output = crate::stdlib::format_stdout(&arg_vals, &format_lit);
+                if name == "println!" {
+                    self.writeln(&output);
+                } else {
+                    self.write(&output);
+                }
+                Ok(Value::Unit)
+            }
+            "format!" => {
+                let format_lit = match &args[0] {
+                    Expr::Literal(Literal::String(s)) => s.clone(),
+                    _ => return Err("format! requires string literal as first argument".to_string()),
+                };
+                let arg_vals: Result<Vec<Value>, String> = args[1..].iter().map(|a| self.eval_expr(a)).collect();
+                let arg_vals = arg_vals?;
+                Ok(Value::String(crate::stdlib::format_stdout(&arg_vals, &format_lit)))
+            }
+            "assert_eq!" => {
+                let left = self.eval_expr(&args[0])?;
+                let right = self.eval_expr(&args[1])?;
+                let left_str = left.to_string();
+                let right_str = right.to_string();
+                if left_str != right_str {
+                    return Err(format!("assertion failed: `(left == right)`\n left: `{}`,\n right: `{}`", left_str, right_str));
+                }
+                Ok(Value::Unit)
+            }
+            "vec!" => {
+                let items: Result<Vec<Value>, String> = args.iter().map(|a| self.eval_expr(a)).collect();
+                Ok(Value::Vec(items?))
+            }
+            _ => Err(format!("unknown macro: {}", name)),
+        }
     }
 
-    fn eval_field(&mut self, _base: &Expr, _name: &str) -> Result<Value, String> {
-        Err("eval_field not yet implemented".to_string())
+    fn eval_method_call(&mut self, receiver: &Expr, method: &str, args: &[Expr]) -> Result<Value, String> {
+        let receiver_val = self.eval_expr(receiver)?;
+        let type_name = receiver_val.type_name().to_string();
+
+        if let Some(r) = self.resolve_builtin_method(&receiver_val, method, receiver, args) {
+            return r;
+        }
+
+        if let Some(r) = self.resolve_user_method(&receiver_val, method, receiver, args) {
+            return r;
+        }
+
+        if let Some(r) = self.eval_iterator_method(&receiver_val, method, receiver, args) {
+            return r;
+        }
+
+        Err(format!("no method `{}` for type `{}`", method, type_name))
     }
 
-    fn eval_index(&mut self, _base: &Expr, _index: &Expr) -> Result<Value, String> {
-        Err("eval_index not yet implemented".to_string())
+    fn resolve_builtin_method(&mut self, receiver_val: &Value, method: &str,
+                               _receiver: &Expr, args: &[Expr]) -> Option<Result<Value, String>> {
+        let type_name = receiver_val.type_name();
+
+        match type_name {
+            "String" | "&str" => self.eval_string_method(receiver_val, method, args),
+            "Vec" | "Iterator" => self.eval_vec_method(receiver_val, method, _receiver, args),
+            "HashMap" => self.eval_hashmap_method(receiver_val, method, args),
+            _ => None,
+        }
     }
 
-    fn eval_struct_lit(&mut self, _name: &str, _fields: &[(String, Expr)]) -> Result<Value, String> {
-        Err("eval_struct_lit not yet implemented".to_string())
+    fn resolve_user_method(&mut self, receiver_val: &Value, method: &str,
+                            _receiver: &Expr, args: &[Expr]) -> Option<Result<Value, String>> {
+        let type_name = receiver_val.type_name().to_string();
+
+        let found = self.impls.iter()
+            .find(|(t, _)| *t == type_name)
+            .and_then(|(_, methods)| methods.iter().find(|m| m.name == method))
+            .cloned();
+
+        if let Some(m) = found {
+            let arg_vals: Result<Vec<Value>, String> = args.iter().map(|a| self.eval_expr(a)).collect();
+            let arg_vals = arg_vals.ok()?;
+            let mut all_args = vec![receiver_val.clone()];
+            all_args.extend(arg_vals);
+            return Some(self.call_function(&m, &all_args));
+        }
+
+        let found = self.trait_impls.iter()
+            .find(|(_, impl_type_name, _)| *impl_type_name == type_name)
+            .and_then(|(_, _, methods)| methods.iter().find(|m| m.name == method))
+            .cloned();
+
+        if let Some(m) = found {
+            let arg_vals: Result<Vec<Value>, String> = args.iter().map(|a| self.eval_expr(a)).collect();
+            let arg_vals = arg_vals.ok()?;
+            let mut all_args = vec![receiver_val.clone()];
+            all_args.extend(arg_vals);
+            return Some(self.call_function(&m, &all_args));
+        }
+
+        None
+    }
+
+    fn eval_string_method(&mut self, receiver_val: &Value, method: &str, args: &[Expr]) -> Option<Result<Value, String>> {
+        let s = receiver_val.to_string_value()?;
+        match method {
+            "len" => Some(Ok(Value::Int(s.len() as i64))),
+            "clone" => Some(Ok(receiver_val.clone())),
+            "push_str" => {
+                let arg = self.eval_expr(&args[0]).ok()?;
+                let to_push = arg.to_string_value()?.to_string();
+                match receiver_val {
+                    Value::String(original) => {
+                        let mut new_s = original.clone();
+                        new_s.push_str(&to_push);
+                        Some(Ok(Value::String(new_s)))
+                    }
+                    _ => None,
+                }
+            }
+            "as_str" => Some(Ok(receiver_val.clone())),
+            "to_string" => Some(Ok(Value::String(s.to_string()))),
+            "parse" => {
+                match s {
+                    "" => Some(Err("cannot parse empty string".to_string())),
+                    s if s.parse::<i64>().is_ok() => {
+                        Some(Ok(Value::EnumVariant("Result".to_string(), "Ok".to_string(),
+                            Some(Box::new(Value::Int(s.parse::<i64>().unwrap()))))))
+                    }
+                    s if s.parse::<f64>().is_ok() => {
+                        Some(Ok(Value::EnumVariant("Result".to_string(), "Ok".to_string(),
+                            Some(Box::new(Value::Float(s.parse::<f64>().unwrap()))))))
+                    }
+                    _ => {
+                        Some(Ok(Value::EnumVariant("Result".to_string(), "Err".to_string(),
+                            Some(Box::new(Value::String("invalid digit found in string".to_string()))))))
+                    }
+                }
+            }
+            _ => None,
+        }
+    }
+
+    fn eval_vec_method(&mut self, receiver_val: &Value, method: &str,
+                        _receiver: &Expr, _args: &[Expr]) -> Option<Result<Value, String>> {
+        match receiver_val {
+            Value::Vec(v) => {
+                match method {
+                    "push" => None,
+                    "pop" => {
+                        if v.is_empty() {
+                            Some(Ok(Value::Unit))
+                        } else {
+                            Some(Ok(v.last().unwrap().clone()))
+                        }
+                    }
+                    "len" => Some(Ok(Value::Int(v.len() as i64))),
+                    "iter" => Some(Ok(Value::Iter(v.clone()))),
+                    _ => None,
+                }
+            }
+            Value::Iter(v) => {
+                match method {
+                    "len" => Some(Ok(Value::Int(v.len() as i64))),
+                    _ => None,
+                }
+            }
+            _ => None,
+        }
+    }
+
+    fn eval_hashmap_method(&mut self, receiver_val: &Value, method: &str, args: &[Expr]) -> Option<Result<Value, String>> {
+        match receiver_val {
+            Value::HashMap(m) => {
+                match method {
+                    "insert" => {
+                        let key = self.eval_expr(&args[0]).ok()?;
+                        let val = self.eval_expr(&args[1]).ok()?;
+                        let key_str = match &key {
+                            Value::String(s) => s.clone(),
+                            _ => return Some(Err("HashMap key must be string".to_string())),
+                        };
+                        let mut new_map = m.clone();
+                        new_map.insert(key_str, val);
+                        Some(Ok(Value::HashMap(new_map)))
+                    }
+                    "len" => Some(Ok(Value::Int(m.len() as i64))),
+                    _ => None,
+                }
+            }
+            _ => None,
+        }
+    }
+
+    fn eval_iterator_method(&mut self, _receiver_val: &Value, _method: &str,
+                             _receiver: &Expr, _args: &[Expr]) -> Option<Result<Value, String>> {
+        None
+    }
+
+    fn eval_field(&mut self, base: &Expr, name: &str) -> Result<Value, String> {
+        let val = self.eval_expr(base)?;
+        match &val {
+            Value::Struct(_, fields) => {
+                fields.iter()
+                    .find(|(n, _)| n == name)
+                    .map(|(_, v)| v.clone())
+                    .ok_or_else(|| format!("no field `{}` on struct", name))
+            }
+            Value::EnumVariant(_, _, payload) => {
+                if name == "0" {
+                    payload.as_ref()
+                        .map(|p| *p.clone())
+                        .ok_or_else(|| format!("no field `{}` on enum variant", name))
+                } else {
+                    Err(format!("no field `{}` on enum variant", name))
+                }
+            }
+            _ => Err(format!("cannot access field `{}` on `{}`", name, val.type_name())),
+        }
+    }
+
+    fn eval_index(&mut self, base: &Expr, index: &Expr) -> Result<Value, String> {
+        let base_val = self.eval_expr(base)?;
+        let idx_val = self.eval_expr(index)?;
+        match (&base_val, &idx_val) {
+            (Value::Vec(v), Value::Int(i)) => {
+                let idx = *i as usize;
+                if idx >= v.len() {
+                    Err(RuntimeError::IndexOutOfBounds.to_string())
+                } else {
+                    Ok(v[idx].clone())
+                }
+            }
+            (Value::HashMap(m), Value::String(key)) => {
+                m.get(key).cloned()
+                    .ok_or_else(|| format!("key not found: {}", key))
+            }
+            _ => Err(format!("cannot index {} with {}", base_val.type_name(), idx_val.type_name())),
+        }
+    }
+
+    fn eval_struct_lit(&mut self, name: &str, fields: &[(String, Expr)]) -> Result<Value, String> {
+        let field_vals: Result<Vec<(String, Value)>, String> = fields.iter()
+            .map(|(n, e)| self.eval_expr(e).map(|v| (n.clone(), v)))
+            .collect();
+        Ok(Value::Struct(name.to_string(), field_vals?))
     }
 
     fn eval_range(&mut self, start: &Expr, end: &Expr, inclusive: bool) -> Result<Value, String> {
@@ -386,16 +679,68 @@ impl EvalContext {
         }
     }
 
-    fn eval_try(&mut self, _inner: &Expr) -> Result<Value, String> {
-        Err("eval_try not yet implemented".to_string())
+    fn eval_try(&mut self, inner: &Expr) -> Result<Value, String> {
+        let val = self.eval_expr(inner)?;
+        match &val {
+            Value::EnumVariant(_, name, payload) if name == "Ok" => {
+                Ok(*payload.clone().unwrap_or(Box::new(Value::Unit)))
+            }
+            Value::EnumVariant(_, name, payload) if name == "Err" => {
+                let err_val = *payload.clone().unwrap_or(Box::new(Value::Unit));
+                self.return_value = Some(err_val.clone());
+                Err(err_val.to_string())
+            }
+            _ => Ok(val),
+        }
     }
 
-    fn eval_match(&mut self, _scrutinee: &Expr, _arms: &[(Pat, Expr)]) -> Result<Value, String> {
-        Err("eval_match not yet implemented".to_string())
+    fn eval_match(&mut self, scrutinee: &Expr, arms: &[(Pat, Expr)]) -> Result<Value, String> {
+        let val = self.eval_expr(scrutinee)?;
+
+        for (pat, body) in arms {
+            if self.pattern_matches(pat, &val) {
+                self.scope.push_frame();
+                if let Err(e) = self.bind_pattern(pat, &val) {
+                    self.scope.pop_frame();
+                    return Err(e);
+                }
+                let result = self.eval_expr(body)?;
+                self.scope.pop_frame();
+                return Ok(result);
+            }
+        }
+
+        Err("non-exhaustive match: no pattern matched the value".to_string())
     }
 
-    fn eval_assign(&mut self, _lhs: &Expr, _rhs: &Expr) -> Result<Value, String> {
-        Err("eval_assign not yet implemented".to_string())
+    fn eval_assign(&mut self, lhs: &Expr, rhs: &Expr) -> Result<Value, String> {
+        let val = self.eval_expr(rhs)?;
+
+        match lhs {
+            Expr::Ident(name) => {
+                if self.scope.get_mut(name).is_some() {
+                    if let Some(slot) = self.scope.get_mut(name) {
+                        *slot = val.clone();
+                    }
+                    Ok(val)
+                } else {
+                    Err(format!("undefined variable: {}", name))
+                }
+            }
+            Expr::Index(base, index) => {
+                let idx_val = self.eval_expr(index)?;
+                let mut base_val = self.eval_expr(base)?;
+                match (&mut base_val, &idx_val) {
+                    (Value::HashMap(m), Value::String(key)) => {
+                        m.insert(key.clone(), val.clone());
+                        self.writeback(base, base_val)?;
+                        Ok(val)
+                    }
+                    _ => Err("cannot assign to this index".to_string()),
+                }
+            }
+            _ => Err("cannot assign to this expression".to_string()),
+        }
     }
 
     fn call_function(&mut self, func: &FnStmt, args: &[Value]) -> Result<Value, String> {
@@ -433,16 +778,65 @@ impl EvalContext {
         Ok(Value::Unit)
     }
 
-    // Placeholders for reference cells and comparison
-    fn writeback(&mut self, _original: &Expr, _new_val: Value) -> Result<(), String> {
-        Err("writeback not yet implemented".to_string())
+    fn writeback(&mut self, original: &Expr, new_val: Value) -> Result<(), String> {
+        if let Expr::Ident(name) = original {
+            if let Some(slot) = self.scope.get_mut(name) {
+                *slot = new_val;
+                return Ok(());
+            }
+        }
+        Err("cannot write back value".to_string())
     }
 
-    fn pattern_matches(&self, _pat: &Pat, _val: &Value) -> bool {
-        false
+    fn pattern_matches(&self, pat: &Pat, val: &Value) -> bool {
+        match (pat, val) {
+            (Pat::Wild, _) => true,
+            (Pat::Lit(lit), _) => {
+                match (lit, val) {
+                    (Literal::Int(a), Value::Int(b)) => *a == *b,
+                    (Literal::Float(a), Value::Float(b)) => (*a - *b).abs() < 1e-10,
+                    (Literal::Bool(a), Value::Bool(b)) => *a == *b,
+                    (Literal::String(a), Value::String(b)) => *a == *b,
+                    (Literal::Char(a), Value::Char(b)) => *a == *b,
+                    _ => false,
+                }
+            }
+            (Pat::Ident(_), _) => true,
+            (Pat::Enum(en, subpats), Value::EnumVariant(_, vn, payload)) => {
+                if *en != *vn { return false; }
+                if subpats.is_empty() { return true; }
+                if let (Some(p), Some(sub)) = (payload, subpats.first()) {
+                    self.pattern_matches(sub, p.as_ref())
+                } else {
+                    subpats.is_empty()
+                }
+            }
+            (Pat::Tuple(ps), _) => {
+                ps.iter().all(|p| matches!(p, Pat::Wild))
+            }
+            _ => false,
+        }
     }
 
-    fn bind_pattern(&mut self, _pat: &Pat, _val: &Value) -> Result<(), String> {
-        Err("bind_pattern not yet implemented".to_string())
+    fn bind_pattern(&mut self, pat: &Pat, val: &Value) -> Result<(), String> {
+        match pat {
+            Pat::Ident(name) => {
+                self.scope.define(name, val.clone());
+                Ok(())
+            }
+            Pat::Enum(_, subpats) => {
+                if let Value::EnumVariant(_, _, payload) = val {
+                    if let (Some(p), Some(sub)) = (payload, subpats.first()) {
+                        self.bind_pattern(sub, p)?
+                    }
+                }
+                Ok(())
+            }
+            Pat::Tuple(ps) => {
+                let _ = ps;
+                Ok(())
+            }
+            _ => Ok(()),
+        }
     }
 }
