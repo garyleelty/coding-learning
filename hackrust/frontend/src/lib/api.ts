@@ -1,15 +1,10 @@
 /**
  * API client for communicating with the HackRust backend
- * Supports: local backend, Rust Playground API, offline fallback
+ * Supports: Rust Playground API, offline WASM fallback
  */
 
-export interface CompileResult {
-  success: boolean;
-  output: string | null;
-  compilationErrors: string | null;
-  runtimeErrors: string | null;
-  matchExpected: boolean | null;
-}
+import { getWasmInterpreter } from './wasmLoader';
+import type { CompileResult } from '../types';
 
 /**
  * Compiles and runs Rust code via Rust Playground API (free, no auth)
@@ -55,41 +50,47 @@ async function compileViaPlayground(code: string): Promise<CompileResult> {
 }
 
 /**
- * Compiles and runs Rust code via local backend API
- */
-async function compileViaBackend(code: string, expectedOutput?: string): Promise<CompileResult> {
-  const response = await fetch('/api/compile', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code, expectedOutput }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Backend API error: ${response.status}`);
-  }
-
-  return response.json();
-}
-
-/**
  * Compiles and runs Rust code
- * Tries: local backend → Rust Playground → error
+ * Tries: Rust Playground API → WASM interpreter (offline fallback)
  */
 export async function compileRust(code: string, expectedOutput?: string): Promise<CompileResult> {
-  // Try local backend first
+  // 1. Try Rust Playground API (online)
   try {
-    return await compileViaBackend(code, expectedOutput);
+    const result = await compileViaPlayground(code);
+    if (expectedOutput !== undefined && result.success && result.output != null) {
+      result.matchExpected = result.output.trimEnd() === expectedOutput.trimEnd();
+    }
+    return result;
   } catch {
-    // Backend not available, try Playground
+    // Playground unavailable — fall through to WASM
   }
 
-  // Try Rust Playground API
-  const result = await compileViaPlayground(code);
+  // 2. Fallback to WASM interpreter (offline)
+  try {
+    const wasm = await getWasmInterpreter();
+    const result = wasm.run_code(code);
 
-  // Compare output if expected
-  if (expectedOutput !== undefined && result.success && result.output) {
-    result.matchExpected = result.output.trimEnd() === expectedOutput.trimEnd();
+    let matchExpected = null;
+    if (expectedOutput !== undefined && result.success && result.output != null) {
+      matchExpected = result.output.trimEnd() === expectedOutput.trimEnd();
+    }
+
+    return {
+      success: result.success,
+      output: result.output ?? null,
+      compilationErrors: result.errors.length > 0 ? result.errors.join('\n') : null,
+      runtimeErrors: null,
+      warnings: result.warnings,
+      matchExpected,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      output: null,
+      compilationErrors: `WASM interpreter error: ${err}`,
+      runtimeErrors: null,
+      warnings: [],
+      matchExpected: null,
+    };
   }
-
-  return result;
 }
