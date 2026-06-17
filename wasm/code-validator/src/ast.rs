@@ -47,6 +47,9 @@ pub enum Expr {
     Break,
     Continue,
     Assign(Box<Expr>, Box<Expr>),   // x = expr; *ptr = expr; map[key] = expr
+    Loop(Box<Expr>),
+    While(Box<Expr>, Box<Expr>),    // cond, body
+    ForIn(String, Box<Expr>, Box<Expr>), // pat, iter, body
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
