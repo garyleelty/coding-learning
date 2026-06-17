@@ -218,7 +218,7 @@ export const worlds: World[] = [
     boss: {
       title: '变量练习任务',
       description: '跟着模板完成变量练习：\n1. 创建 hp = 100\n2. 创建 damage = 25\n3. 创建 remaining = hp - damage\n4. 输出 "Remaining HP: 75"',
-      template: `fn main() {\n    let hp = 100;\n    let damage = 25;\n    // 创建 remaining\n    \n    println!("Remaining HP: 75");\n}`,
+      template: `fn main() {\n    let hp = 100;\n    let damage = 25;\n    // 创建 remaining\n    \n    println!("Remaining HP: {}", remaining);\n}`,
       validation: {
         required: ['let', 'hp', 'damage', 'remaining', 'println!'],
         forbidden: ['unsafe'],

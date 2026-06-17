@@ -160,8 +160,8 @@ export async function compileAndRun(code: string, expectedOutput?: string): Prom
     return {
       success: true,
       output: runResult.output,
-      compilationErrors: compileResult.errors || null,
-      runtimeErrors: runResult.errors || null,
+      compilationErrors: null,
+      runtimeErrors: null,
       matchExpected,
     };
   } finally {
