@@ -469,11 +469,11 @@ impl EvalContext {
             return r;
         }
 
-        if let Some(r) = self.resolve_user_method(&receiver_val, method, receiver, args) {
+        if let Some(r) = self.eval_iterator_method(&receiver_val, method, receiver, args) {
             return r;
         }
 
-        if let Some(r) = self.eval_iterator_method(&receiver_val, method, receiver, args) {
+        if let Some(r) = self.resolve_user_method(&receiver_val, method, receiver, args) {
             return r;
         }
 
@@ -616,9 +616,98 @@ impl EvalContext {
         }
     }
 
-    fn eval_iterator_method(&mut self, _receiver_val: &Value, _method: &str,
-                             _receiver: &Expr, _args: &[Expr]) -> Option<Result<Value, String>> {
-        None
+    fn eval_iterator_method(&mut self, receiver_val: &Value, method: &str,
+                             _receiver: &Expr, args: &[Expr]) -> Option<Result<Value, String>> {
+        let items = match receiver_val {
+            Value::Vec(v) => v.clone(),
+            Value::Iter(v) => v.clone(),
+            _ => return None,
+        };
+
+        match method {
+            "filter" => {
+                if args.len() != 1 {
+                    return Some(Err("filter requires 1 argument (a closure)".to_string()));
+                }
+                let closure = &args[0];
+                let mut result = Vec::new();
+                for item in &items {
+                    let keep = self.eval_closure_predicate(closure, item)?;
+                    if keep {
+                        result.push(item.clone());
+                    }
+                }
+                Some(Ok(Value::Iter(result)))
+            }
+            "map" => {
+                if args.len() != 1 {
+                    return Some(Err("map requires 1 argument (a closure)".to_string()));
+                }
+                let closure = &args[0];
+                let mut result = Vec::new();
+                for item in &items {
+                    let mapped = self.eval_closure_map(closure, item)?;
+                    result.push(mapped);
+                }
+                Some(Ok(Value::Iter(result)))
+            }
+            "sum" => {
+                let mut total_float: Option<f64> = None;
+                let mut total_int: Option<i64> = Some(0);
+                for item in &items {
+                    match item {
+                        Value::Int(i) => {
+                            total_int = Some(total_int.unwrap_or(0) + i);
+                        }
+                        Value::Float(f) => {
+                            let val = total_float.unwrap_or_else(|| total_int.unwrap_or(0) as f64) + f;
+                            total_float = Some(val);
+                            total_int = None;
+                        }
+                        _ => return Some(Err("sum requires numeric elements".to_string())),
+                    }
+                }
+                if let Some(f) = total_float {
+                    Some(Ok(Value::Float(f)))
+                } else {
+                    Some(Ok(Value::Int(total_int.unwrap_or(0))))
+                }
+            }
+            "collect" => {
+                Some(Ok(Value::Vec(items)))
+            }
+            _ => None,
+        }
+    }
+
+    fn eval_closure_predicate(&mut self, closure: &Expr, item: &Value) -> Option<bool> {
+        match closure {
+            Expr::Lambda(params, body) => {
+                self.scope.push_frame();
+                if let Some(param) = params.first() {
+                    self.scope.define(param, item.clone());
+                }
+                let result = self.eval_expr(body).ok()?;
+                self.scope.pop_frame();
+                result.to_bool()
+            }
+            _ => None,
+        }
+    }
+
+    fn eval_closure_map(&mut self, closure: &Expr, item: &Value) -> Option<Value> {
+        match closure {
+            Expr::Lambda(params, body) => {
+                self.scope.push_frame();
+                if let Some(param) = params.first() {
+                    self.scope.define(param, item.clone());
+                }
+                let result = self.eval_expr(body).ok()?;
+                self.scope.pop_frame();
+                Some(result)
+            }
+            _ => None,
+        }
     }
 
     fn eval_field(&mut self, base: &Expr, name: &str) -> Result<Value, String> {
