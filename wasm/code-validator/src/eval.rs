@@ -924,7 +924,7 @@ impl EvalContext {
         Ok(None)
     }
 
-    fn eval_let_init(&mut self, name: &str, init_expr: &Expr) -> Result<Value, String> {
+    fn eval_let_init(&mut self, _name: &str, init_expr: &Expr) -> Result<Value, String> {
         // Check for closure-as-variable: |x| body
         if let Expr::Lambda(params, body) = init_expr {
             let fn_name = format!("__closure_{}", self.functions.len());
