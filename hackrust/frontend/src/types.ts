@@ -100,3 +100,13 @@ export interface ValidationResult {
   message: string;
   details?: string[];
 }
+
+// Compilation result from Playground API or WASM interpreter
+export interface CompileResult {
+  success: boolean;
+  output: string | null;
+  compilationErrors: string | null;
+  runtimeErrors: string | null;
+  warnings?: string[];
+  matchExpected: boolean | null;
+}
