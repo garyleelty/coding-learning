@@ -45,6 +45,7 @@ async function compileViaPlayground(code: string): Promise<CompileResult> {
     output: stdout || null,
     compilationErrors: !success && cleanStderr ? cleanStderr : null,
     runtimeErrors: success && cleanStderr ? cleanStderr : null,
+    compilationSource: 'playground',
     matchExpected: null,
   };
 }
@@ -81,6 +82,7 @@ export async function compileRust(code: string, expectedOutput?: string): Promis
       compilationErrors: result.errors.length > 0 ? result.errors.join('\n') : null,
       runtimeErrors: null,
       warnings: result.warnings,
+      compilationSource: 'wasm',
       matchExpected,
     };
   } catch (err) {
