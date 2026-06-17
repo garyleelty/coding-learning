@@ -10,6 +10,11 @@ pub fn format_stdout(args: &[Value], format_str: &str) -> String {
     while let Some(ch) = chars.next() {
         if ch == '{' {
             match chars.peek() {
+                Some('{') => {
+                    // Escaped brace {{ → {
+                    chars.next();
+                    result.push('{');
+                }
                 Some('}') => {
                     // {} — use next argument with Display
                     chars.next();
@@ -55,6 +60,13 @@ pub fn format_stdout(args: &[Value], format_str: &str) -> String {
                     result.push(ch);
                 }
             }
+        } else if ch == '}' {
+            if matches!(chars.peek(), Some('}')) {
+                chars.next();
+                result.push('}');
+            } else {
+                result.push(ch);
+            }
         } else {
             result.push(ch);
         }
@@ -63,13 +75,14 @@ pub fn format_stdout(args: &[Value], format_str: &str) -> String {
 }
 
 /// Check if a function name is a built-in macro and return its short name
+/// Macros appear as both "println" (from syn::Stmt::Macro path) and "println!" (from ! expr)
 pub fn is_print_macro(name: &str) -> Option<&'static str> {
-    match name {
-        "println!" => Some("println"),
-        "print!" => Some("print"),
-        "format!" => Some("format"),
-        "assert_eq!" => Some("assert_eq"),
-        "vec!" => Some("vec"),
+    match name.trim_end_matches('!') {
+        "println" => Some("println"),
+        "print" => Some("print"),
+        "format" => Some("format"),
+        "assert_eq" => Some("assert_eq"),
+        "vec" => Some("vec"),
         _ => None,
     }
 }

@@ -1,5 +1,6 @@
 use crate::ast::*;
 use syn::ItemMod;
+use syn::parse::{ParseStream, Parser};
 
 pub fn parse_program(code: &str) -> Result<Program, String> {
     let file: syn::File = syn::parse_file(code).map_err(|e| format!("parse error: {}", e))?;
@@ -292,13 +293,7 @@ fn parse_stmt(stmt: &syn::Stmt) -> Result<Stmt, String> {
         syn::Stmt::Item(item) => parse_item(item.clone()),
         syn::Stmt::Macro(m) => {
             let macro_name = path_to_string(&m.mac.path);
-            let args = if m.mac.tokens.is_empty() {
-                vec![]
-            } else if let Ok(expr) = syn::parse2::<syn::Expr>(m.mac.tokens.clone()) {
-                vec![parse_expr(&expr)?]
-            } else {
-                vec![]
-            };
+            let args = parse_macro_args(&m.mac.tokens)?;
             Ok(Stmt::Expr(Expr::Call(Box::new(Expr::Ident(macro_name)), args)))
         }
     }
@@ -477,17 +472,44 @@ fn parse_expr(expr: &syn::Expr) -> Result<Expr, String> {
         syn::Expr::Reference(r) => parse_expr(&r.expr),
         syn::Expr::Macro(m) => {
             let macro_name = path_to_string(&m.mac.path);
-            let args = if m.mac.tokens.is_empty() {
-                vec![]
-            } else if let Ok(expr) = syn::parse2::<syn::Expr>(m.mac.tokens.clone()) {
-                vec![parse_expr(&expr)?]
-            } else {
-                vec![]
-            };
+            let args = parse_macro_args(&m.mac.tokens)?;
             Ok(Expr::Call(Box::new(Expr::Ident(macro_name)), args))
         }
         _ => Err("unsupported expression".to_string()),
     }
+}
+
+/// Parse macro tokens as a comma-separated list of expressions.
+/// Macros like println!("{}", x) have tokens `"{}", x` — a comma-separated sequence.
+fn parse_macro_args(tokens: &proc_macro2::TokenStream) -> Result<Vec<Expr>, String> {
+    if tokens.is_empty() {
+        return Ok(vec![]);
+    }
+    // Try parsing as comma-separated list of expressions
+    let parser = |input: ParseStream| {
+        syn::punctuated::Punctuated::<syn::Expr, syn::Token![,]>::parse_separated_nonempty(input)
+    };
+    if let Ok(exprs) = parser.parse2(tokens.clone()) {
+        let mut result = Vec::new();
+        for expr in exprs {
+            result.push(parse_expr(&expr)?);
+        }
+        return Ok(result);
+    }
+    // Try as single expression (e.g., vec![1, 2, 3] has tokens inside [...] which form one expr)
+    if let Ok(expr) = syn::parse2::<syn::Expr>(tokens.clone()) {
+        return Ok(vec![parse_expr(&expr)?]);
+    }
+    // Last resort: try as a single block expression (for macro_rules style calls)
+    if let Ok(block) = syn::parse2::<syn::ExprBlock>(tokens.clone()) {
+        return parse_block(&block.block).map(|stmts| {
+            stmts.into_iter().map(|s| match s {
+                Stmt::Expr(e) => e,
+                other => Expr::Block(vec![other]),
+            }).collect()
+        });
+    }
+    Ok(vec![])
 }
 
 fn parse_literal(lit: &syn::Lit) -> Result<Literal, String> {
@@ -506,6 +528,15 @@ fn parse_pat(pat: &syn::Pat) -> Result<Pat, String> {
         syn::Pat::Wild(_) => Ok(Pat::Wild),
         syn::Pat::Ident(i) => Ok(Pat::Ident(i.ident.to_string())),
         syn::Pat::Lit(l) => parse_literal(&l.lit).map(Pat::Lit),
+        syn::Pat::Struct(ps) => {
+            let name = path_to_string(&ps.path);
+            let args = ps
+                .fields
+                .iter()
+                .map(|f| parse_pat(&f.pat))
+                .collect::<Result<Vec<_>, String>>()?;
+            Ok(Pat::Enum(name, args))
+        }
         syn::Pat::TupleStruct(ts) => {
             let name = path_to_string(&ts.path);
             let args = ts

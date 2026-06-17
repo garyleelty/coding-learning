@@ -41,7 +41,7 @@ impl Value {
             Value::Vec(_) => "Vec",
             Value::HashMap(_) => "HashMap",
             Value::Struct(name, _) => name,
-            Value::EnumVariant(_, name, _) => name,
+            Value::EnumVariant(enum_name, _, _) => enum_name,
             Value::Fn(_) => "fn",
             Value::Closure(_) => "closure",
             Value::Range(_, _, _) => "Range",

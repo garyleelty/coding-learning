@@ -12,6 +12,7 @@ pub struct EvalContext {
     pub impls: Vec<(String, Vec<FnStmt>)>,
     pub trait_impls: Vec<(String, String, Vec<FnStmt>)>,
     pub traits: Vec<(String, Vec<(String, Vec<(String, TypeName)>, TypeName)>)>,
+    pub use_imports: Vec<(String, Vec<String>)>,  // short name → full path
     pub loop_break_value: Option<Value>,
     pub return_value: Option<Value>,
 }
@@ -27,6 +28,7 @@ impl EvalContext {
             impls: vec![],
             trait_impls: vec![],
             traits: vec![],
+            use_imports: vec![],
             loop_break_value: None,
             return_value: None,
         }
@@ -83,8 +85,11 @@ impl EvalContext {
                     self.register_item(item)?;
                 }
             }
-            Stmt::Use { path: _ } => {
-                // use statements are informational — items are global
+            Stmt::Use { path } => {
+                // Track imports: last segment → full path for Ident resolution
+                if let Some(last) = path.last() {
+                    self.use_imports.push((last.clone(), path.clone()));
+                }
             }
             Stmt::Attributed { attr: _, item } => {
                 // #[test] and #[derive(Debug)] — register the item normally
@@ -99,9 +104,15 @@ impl EvalContext {
         match expr {
             Expr::Literal(lit) => self.eval_literal(lit),
             Expr::Ident(name) => {
-                self.scope.get(name)
-                    .cloned()
-                    .ok_or_else(|| format!("undefined variable: {}", name))
+                // Check scope first
+                if let Some(val) = self.scope.get(name).cloned() {
+                    return Ok(val);
+                }
+                // Check imported names via use statements
+                if let Some(path) = self.resolve_import(name) {
+                    return self.eval_path(&path);
+                }
+                Err(format!("undefined variable: {}", name))
             }
             Expr::Path(path) => self.eval_path(path),
             Expr::Binary(lhs, op, rhs) => self.eval_binary(lhs, op, rhs),
@@ -149,6 +160,28 @@ impl EvalContext {
         let l = self.eval_expr(lhs)?;
         let r = self.eval_expr(rhs)?;
 
+        // Handle compound assignment operators (+=, -=, *=, /=)
+        let base_op = match op {
+            BinOp::AddAssign => Some(BinOp::Add),
+            BinOp::SubAssign => Some(BinOp::Sub),
+            BinOp::MulAssign => Some(BinOp::Mul),
+            BinOp::DivAssign => Some(BinOp::Div),
+            _ => None,
+        };
+        if let Some(bop) = base_op {
+            let result = self.eval_binary_inner(&l, &bop, &r)?;
+            if let Expr::Ident(name) = lhs {
+                if let Some(slot) = self.scope.get_mut(name) {
+                    *slot = result.clone();
+                }
+            }
+            return Ok(result);
+        }
+
+        self.eval_binary_inner(&l, op, &r)
+    }
+
+    fn eval_binary_inner(&mut self, l: &Value, op: &BinOp, r: &Value) -> Result<Value, String> {
         match (op, &l, &r) {
             // Integer arithmetic
             (BinOp::Add, Value::Int(a), Value::Int(b)) => Ok(Value::Int(a + b)),
@@ -201,8 +234,15 @@ impl EvalContext {
                 Ok(Value::Bool(result))
             }
             (BinOp::Ne, _, _) => {
-                let eq = self.eval_binary(lhs, &BinOp::Eq, rhs)?;
-                Ok(Value::Bool(!eq.to_bool().unwrap_or(false)))
+                let result = match (&l, &r) {
+                    (Value::Int(a), Value::Int(b)) => a != b,
+                    (Value::Float(a), Value::Float(b)) => (a - b).abs() >= 1e-10,
+                    (Value::Bool(a), Value::Bool(b)) => a != b,
+                    (Value::String(a), Value::String(b)) => a != b,
+                    (Value::Char(a), Value::Char(b)) => a != b,
+                    _ => true,
+                };
+                Ok(Value::Bool(result))
             }
             (BinOp::Lt, Value::Int(a), Value::Int(b)) => Ok(Value::Bool(a < b)),
             (BinOp::Le, Value::Int(a), Value::Int(b)) => Ok(Value::Bool(a <= b)),
@@ -255,20 +295,7 @@ impl EvalContext {
                 }
                 Stmt::Let { name, mutable: _, init, ty: _ } => {
                     let val = if let Some(init_expr) = init {
-                        // Check for closure-as-variable: |x| body
-                        if let Expr::Lambda(params, body) = init_expr {
-                            let fn_name = format!("__closure_{}", self.functions.len());
-                            let fn_stmt = FnStmt {
-                                name: fn_name.clone(),
-                                params: params.iter().map(|p| (p.clone(), TypeName::Named("()".to_string()))).collect(),
-                                ret: TypeName::Tuple(vec![]),
-                                body: vec![Stmt::Expr(*body.clone())],
-                            };
-                            self.functions.push(fn_stmt);
-                            Value::Fn(FnValue { name: fn_name, param_count: params.len() })
-                        } else {
-                            self.eval_expr(init_expr)?
-                        }
+                        self.eval_let_init(name, init_expr)?
                     } else {
                         Value::Unit
                     };
@@ -381,6 +408,8 @@ impl EvalContext {
                         }
                         _ => Err(format!("`{}` is not callable", name)),
                     }
+                } else if let Some(val) = self.try_enum_variant(name, args)? {
+                    Ok(val)
                 } else {
                     Err(format!("undefined function: {}", name))
                 }
@@ -416,10 +445,10 @@ impl EvalContext {
     }
 
     fn eval_builtin_macro(&mut self, func: &Expr, args: &[Expr]) -> Result<Value, String> {
-        let name = match func { Expr::Ident(n) => n.as_str(), _ => "" };
+        let name = match func { Expr::Ident(n) => n.trim_end_matches('!'), _ => "" };
 
         match name {
-            "println!" | "print!" => {
+            "println" | "print" => {
                 let format_lit = match &args[0] {
                     Expr::Literal(Literal::String(s)) => s.clone(),
                     _ => return Err("println!/print! requires string literal as first argument".to_string()),
@@ -427,14 +456,14 @@ impl EvalContext {
                 let arg_vals: Result<Vec<Value>, String> = args[1..].iter().map(|a| self.eval_expr(a)).collect();
                 let arg_vals = arg_vals?;
                 let output = crate::stdlib::format_stdout(&arg_vals, &format_lit);
-                if name == "println!" {
+                if name == "println" {
                     self.writeln(&output);
                 } else {
                     self.write(&output);
                 }
                 Ok(Value::Unit)
             }
-            "format!" => {
+            "format" => {
                 let format_lit = match &args[0] {
                     Expr::Literal(Literal::String(s)) => s.clone(),
                     _ => return Err("format! requires string literal as first argument".to_string()),
@@ -443,7 +472,7 @@ impl EvalContext {
                 let arg_vals = arg_vals?;
                 Ok(Value::String(crate::stdlib::format_stdout(&arg_vals, &format_lit)))
             }
-            "assert_eq!" => {
+            "assert_eq" => {
                 let left = self.eval_expr(&args[0])?;
                 let right = self.eval_expr(&args[1])?;
                 let left_str = left.to_string();
@@ -453,7 +482,7 @@ impl EvalContext {
                 }
                 Ok(Value::Unit)
             }
-            "vec!" => {
+            "vec" => {
                 let items: Result<Vec<Value>, String> = args.iter().map(|a| self.eval_expr(a)).collect();
                 Ok(Value::Vec(items?))
             }
@@ -465,19 +494,22 @@ impl EvalContext {
         let receiver_val = self.eval_expr(receiver)?;
         let type_name = receiver_val.type_name().to_string();
 
-        if let Some(r) = self.resolve_builtin_method(&receiver_val, method, receiver, args) {
-            return r;
+        let result = self.resolve_builtin_method(&receiver_val, method, receiver, args)
+            .or_else(|| self.eval_iterator_method(&receiver_val, method, receiver, args))
+            .or_else(|| self.resolve_user_method(&receiver_val, method, receiver, args))
+            .ok_or_else(|| format!("no method `{}` for type `{}`", method, type_name))??;
+
+        // Write back the result for mutating methods (HashMap::insert etc.)
+        // when the receiver is a simple variable
+        if let Expr::Ident(name) = receiver {
+            if std::mem::discriminant(&receiver_val) == std::mem::discriminant(&result) {
+                if let Some(slot) = self.scope.get_mut(name) {
+                    *slot = result.clone();
+                }
+            }
         }
 
-        if let Some(r) = self.eval_iterator_method(&receiver_val, method, receiver, args) {
-            return r;
-        }
-
-        if let Some(r) = self.resolve_user_method(&receiver_val, method, receiver, args) {
-            return r;
-        }
-
-        Err(format!("no method `{}` for type `{}`", method, type_name))
+        Ok(result)
     }
 
     fn resolve_builtin_method(&mut self, receiver_val: &Value, method: &str,
@@ -606,6 +638,7 @@ impl EvalContext {
                         };
                         let mut new_map = m.clone();
                         new_map.insert(key_str, val);
+                        // Return the new map so writeback can update the variable
                         Some(Ok(Value::HashMap(new_map)))
                     }
                     "len" => Some(Ok(Value::Int(m.len() as i64))),
@@ -621,6 +654,8 @@ impl EvalContext {
         let items = match receiver_val {
             Value::Vec(v) => v.clone(),
             Value::Iter(v) => v.clone(),
+            Value::Range(s, e, true) => (*s..=*e).map(Value::Int).collect(),
+            Value::Range(s, e, false) => (*s..*e).map(Value::Int).collect(),
             _ => return None,
         };
 
@@ -753,6 +788,23 @@ impl EvalContext {
     }
 
     fn eval_struct_lit(&mut self, name: &str, fields: &[(String, Expr)]) -> Result<Value, String> {
+        // Check if this is an enum variant (name = "EnumName::VariantName")
+        if let Some(delim) = name.find("::") {
+            let enum_name = &name[..delim];
+            let variant_name = &name[delim + 2..];
+            let is_enum = self.enum_defs.iter().any(|(en, variants, _)| {
+                en == enum_name && variants.iter().any(|v| v.name == variant_name)
+            });
+            if is_enum {
+                let field_vals: Result<Vec<(String, Value)>, String> = fields.iter()
+                    .map(|(n, e)| self.eval_expr(e).map(|v| (n.clone(), v)))
+                    .collect();
+                let field_vals = field_vals?;
+                // Flatten named fields into a struct-like payload
+                let payload = Value::Struct(variant_name.to_string(), field_vals);
+                return Ok(Value::EnumVariant(enum_name.to_string(), variant_name.to_string(), Some(Box::new(payload))));
+            }
+        }
         let field_vals: Result<Vec<(String, Value)>, String> = fields.iter()
             .map(|(n, e)| self.eval_expr(e).map(|v| (n.clone(), v)))
             .collect();
@@ -832,6 +884,63 @@ impl EvalContext {
         }
     }
 
+    /// Resolve a use-imported name to its full path (e.g. "PI" → ["std", "f64", "consts", "PI"])
+    fn resolve_import(&self, name: &str) -> Option<Vec<String>> {
+        self.use_imports.iter()
+            .find(|(short, _)| short == name)
+            .map(|(_, path)| path.clone())
+    }
+
+    /// Try to construct an enum variant via function-call syntax (e.g. Ok(n), None, Some(5))
+    fn try_enum_variant(&mut self, name: &str, args: &[Expr]) -> Result<Option<Value>, String> {
+        // Check built-in enum variants first
+        let builtin = match name {
+            "Some" => Some(("Option", "Some", args.len() == 1)),
+            "None" => Some(("Option", "None", true)),
+            "Ok" => Some(("Result", "Ok", args.len() == 1)),
+            "Err" => Some(("Result", "Err", args.len() == 1)),
+            _ => None,
+        };
+        if let Some((enum_name, variant_name, has_payload)) = builtin {
+            if has_payload {
+                let val = self.eval_expr(&args[0])?;
+                return Ok(Some(Value::EnumVariant(enum_name.to_string(), variant_name.to_string(), Some(Box::new(val)))));
+            } else {
+                return Ok(Some(Value::EnumVariant(enum_name.to_string(), variant_name.to_string(), None)));
+            }
+        }
+        // Check user-defined enum variants
+        if let Some((enum_name, variant_name)) = self.enum_defs.iter().find_map(|(enum_name, variants, _)| {
+            variants.iter().find(|v| v.name == name).map(|v| (enum_name.clone(), v.name.clone()))
+        }) {
+            let payload = if args.is_empty() {
+                None
+            } else {
+                let val = self.eval_expr(&args[0])?;
+                Some(Box::new(val))
+            };
+            return Ok(Some(Value::EnumVariant(enum_name, variant_name, payload)));
+        }
+        Ok(None)
+    }
+
+    fn eval_let_init(&mut self, name: &str, init_expr: &Expr) -> Result<Value, String> {
+        // Check for closure-as-variable: |x| body
+        if let Expr::Lambda(params, body) = init_expr {
+            let fn_name = format!("__closure_{}", self.functions.len());
+            let fn_stmt = FnStmt {
+                name: fn_name.clone(),
+                params: params.iter().map(|p| (p.clone(), TypeName::Named("()".to_string()))).collect(),
+                ret: TypeName::Tuple(vec![]),
+                body: vec![Stmt::Expr(*body.clone())],
+            };
+            self.functions.push(fn_stmt);
+            Ok(Value::Fn(FnValue { name: fn_name, param_count: params.len() }))
+        } else {
+            self.eval_expr(init_expr)
+        }
+    }
+
     fn call_function(&mut self, func: &FnStmt, args: &[Value]) -> Result<Value, String> {
         self.scope.push_frame();
         for (i, (param_name, _)) in func.params.iter().enumerate() {
@@ -842,10 +951,11 @@ impl EvalContext {
             };
             self.scope.define(param_name, val);
         }
+        let mut last_value = Value::Unit;
         for stmt in &func.body {
             match stmt {
                 Stmt::Expr(expr) => {
-                    self.eval_expr(expr)?;
+                    last_value = self.eval_expr(expr)?;
                     if self.return_value.is_some() {
                         let ret = self.return_value.take();
                         self.scope.pop_frame();
@@ -854,7 +964,7 @@ impl EvalContext {
                 }
                 Stmt::Let { name, mutable: _, init, ty: _ } => {
                     let val = if let Some(init_expr) = init {
-                        self.eval_expr(init_expr)?
+                        self.eval_let_init(name, init_expr)?
                     } else {
                         Value::Unit
                     };
@@ -864,7 +974,7 @@ impl EvalContext {
             }
         }
         self.scope.pop_frame();
-        Ok(Value::Unit)
+        Ok(last_value)
     }
 
     fn writeback(&mut self, original: &Expr, new_val: Value) -> Result<(), String> {
@@ -892,7 +1002,9 @@ impl EvalContext {
             }
             (Pat::Ident(_), _) => true,
             (Pat::Enum(en, subpats), Value::EnumVariant(_, vn, payload)) => {
-                if *en != *vn { return false; }
+                // Pattern "Shape::Circle" should match variant "Circle"
+                let variant_matches = *en == *vn || en.ends_with(&format!("::{}", vn));
+                if !variant_matches { return false; }
                 if subpats.is_empty() { return true; }
                 if let (Some(p), Some(sub)) = (payload, subpats.first()) {
                     self.pattern_matches(sub, p.as_ref())
@@ -915,8 +1027,26 @@ impl EvalContext {
             }
             Pat::Enum(_, subpats) => {
                 if let Value::EnumVariant(_, _, payload) = val {
-                    if let (Some(p), Some(sub)) = (payload, subpats.first()) {
-                        self.bind_pattern(sub, p)?
+                    if let Some(p) = payload {
+                        // If the payload is a struct with named fields, destructure by field name
+                        if let Value::Struct(_, fields) = p.as_ref() {
+                            for subpat in subpats {
+                                if let Pat::Ident(name) = subpat {
+                                    if let Some((_, field_val)) = fields.iter().find(|(n, _)| n == name) {
+                                        self.scope.define(name, field_val.clone());
+                                    } else {
+                                        self.scope.define(name, p.as_ref().clone());
+                                    }
+                                } else {
+                                    self.bind_pattern(subpat, p.as_ref())?;
+                                }
+                            }
+                        } else {
+                            // Single-payload variant: bind first sub-pattern
+                            if let Some(sub) = subpats.first() {
+                                self.bind_pattern(sub, p.as_ref())?;
+                            }
+                        }
                     }
                 }
                 Ok(())
