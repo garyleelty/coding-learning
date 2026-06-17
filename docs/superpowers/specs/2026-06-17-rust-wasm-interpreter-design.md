@@ -77,6 +77,54 @@ compileRust(code, expectedOutput)
 - 原生指针
 - 第三方 crate（仅支持上述标准库子集）
 
+## 硬缺口 — 需要实现策略的关卡
+
+以下每个 Boss 特性在解释器中都需要 **非平凡** 的实现策略，在此逐条说明：
+
+### w04 HashMap 索引 `data["sum"]`
+
+`HashMap` 的 `Index` trait 被 hardcode 处理：见到 `data[key]` 语法且 `data` 实际类型为 HashMap 时，直接调用 HashMap 的查找方法，不走 trait 解析。同时 `HashMap::insert()` 的左值接受 `&str` 或 `String`。
+
+### w10 `std::f64::consts::PI`
+
+硬编码一组常用 std 路径常量。解析到 `<path>::PI` 时查表返回 `3.141592653589793`。后续如需更多常量（`E`, `TAU` 等）可扩展。
+
+### w12 Trait 多态（`impl Printable for User`）
+
+这是解释器中最复杂的一块。方案：
+1. 在语义分析阶段，识别所有 `impl Trait for Type` 定义
+2. 遇到 `value.method()` 调用时，根据 value 的**类型**直接查找对应 impl 块中的方法
+3. 不实现 vtable 动态分发，仅在解析时静态解析
+4. 不支持 trait 对象 `&dyn Trait`（游戏课程不涉及）
+
+### w14 `?` 运算符 + `parse::<i32>()` + `Result`
+
+- `?` 运算符：实现为 `match result { Ok(v) => v, Err(e) => return Err(e) }`
+- `parse::<i32>()`：实现为解析时把 `<i32>` 提取为目标类型，运行时尝试转换字符串，失败返回 `Err("invalid digit found in string")`
+- `parse_number()` 返回的 `Result<i32, ParseIntError>` 直接用内部 `Result` 枚举表示（`ParseIntError` 简化为字符串）
+
+### w16 `#[test]` + `assert_eq!` + panic
+
+- 检测 `#[cfg(test)]` 标记的 `mod` 和 `#[test]` 标记的 fn
+- 执行完 `main` 后遍历所有 test functions 并运行
+- `assert_eq!` 实现：比较左右值，不等则 `panic!("assertion failed")`
+- 在 WASM 中用 `catch_unwind` 捕获 panic，把 panic 信息作为测试失败输出
+- 预期的 `output === ""` 表示所有测试通过（输出为空则成功）
+
+### w17 Iterator chain `.iter().filter().map().sum()`
+
+不实现惰性迭代（lazy evaluation），而是用**急切管线**：
+1. `.iter()` 收集 Vec 中元素的不可变引用列表
+2. `.filter(f)` 对每个元素执行闭包，生成新列表
+3. `.map(f)` 对每个元素执行闭包，生成新列表
+4. `.sum()` 累加数值元素
+
+闭包 `|x| x.name` 在解析时变为**立即调用的匿名函数**。
+
+### `format!` 宏
+
+`format!` 内部依赖 Display trait。方案：将其作为 builtin 宏处理，在解析时识别 `format!(...)` 调用的结构，提取格式字符串和参数，运行时直接拼接字符串，不走 Display 分发。
+
 ## 语义分析 — Warnings 规则
 
 | Warning | 触发条件 |

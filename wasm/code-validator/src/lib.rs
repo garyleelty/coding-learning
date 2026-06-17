@@ -3,6 +3,7 @@
 use wasm_bindgen::prelude::*;
 
 mod ast;
+mod error;
 mod parse;
 mod value;
 mod scope;
