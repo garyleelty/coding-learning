@@ -3,7 +3,6 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getWorld } from '../data/worlds';
 import type { World } from '../types';
 import { calcBossHP, calcDamage } from '../game/damageCalc';
-import { checkSyntax, validateCode } from '../game/codeValidator';
 import { useGameStore, selectWorldProgress } from '../store/gameStore';
 import { CodeBlock, Feedback, HPBar, ComboIndicator } from '../components';
 import { compileRust } from '../lib/api';
@@ -83,6 +82,7 @@ function BossBattle({
   const [code, setCode] = useState(() => world.boss.template);
   const [bossHp, setBossHp] = useState(maxBossHp);
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
+  const [usedOffline, setUsedOffline] = useState(false);
 
   const resetBattle = useCallback(() => {
     setFeedback(null);
@@ -103,32 +103,11 @@ function BossBattle({
     });
 
     try {
-      // Get expected output from validation rules
       const expectedOutput = world.boss.validation.testCases?.[0]?.expected;
-      
-      // Try backend API first, fallback to local validation
-      let result;
-      let isOnlineMode = false;
-      
-      try {
-        result = await compileRust(code, expectedOutput);
-        isOnlineMode = true;
-      } catch {
-        // Backend not available, use local validation
-        const syntax = checkSyntax(code);
-        if (!syntax.success) {
-          result = { success: false, compilationErrors: syntax.details?.join('\n') || syntax.message, output: null, runtimeErrors: null, matchExpected: null };
-        } else {
-          const validation = validateCode(code, world.boss.validation);
-          if (!validation.success) {
-            result = { success: false, compilationErrors: validation.details?.join('\n') || validation.message, output: null, runtimeErrors: null, matchExpected: null };
-          } else {
-            result = { success: true, output: expectedOutput || '', compilationErrors: null, runtimeErrors: null, matchExpected: true };
-          }
-        }
-      }
 
-      // Handle compilation errors
+      const result = await compileRust(code, expectedOutput);
+      setUsedOffline(result.compilationSource === 'wasm');
+
       if (result.compilationErrors) {
         const nextPlayerHp = Math.max(0, player.hp - 10);
         resetCombo();
@@ -144,7 +123,6 @@ function BossBattle({
         return;
       }
 
-      // Handle runtime errors
       if (result.runtimeErrors) {
         const nextPlayerHp = Math.max(0, player.hp - 10);
         resetCombo();
@@ -160,7 +138,6 @@ function BossBattle({
         return;
       }
 
-      // Handle output mismatch
       if (result.matchExpected === false) {
         const nextPlayerHp = Math.max(0, player.hp - 10);
         resetCombo();
@@ -176,7 +153,6 @@ function BossBattle({
         return;
       }
 
-      // Success - deal damage to boss
       const damage = calcDamage(player.combo);
       const nextHp = Math.max(0, bossHp - damage);
       setBossHp(nextHp);
@@ -192,16 +168,24 @@ function BossBattle({
         setFeedback({
           type: 'correct',
           message: 'Boss 已击败！',
-          explanation: `验证通过，造成 ${damage} 点伤害。获得 ${actualXp} XP。${isOnlineMode ? '' : ' (离线模式)'}`,
+          explanation: `验证通过，造成 ${damage} 点伤害。获得 ${actualXp} XP。`,
           defeated: true,
         });
         return;
       }
 
+      let explanation = '';
+      if (result.output) {
+        explanation = `程序输出:\n${result.output}`;
+      }
+      if (result.warnings && result.warnings.length > 0) {
+        if (explanation) explanation += '\n\n';
+        explanation += `警告:\n${result.warnings.join('\n')}`;
+      }
       setFeedback({
         type: 'info',
         message: `命中 Boss，造成 ${damage} 点伤害`,
-        explanation: isOnlineMode && result.output ? `程序输出:\n${result.output}` : undefined,
+        explanation: explanation || undefined,
       });
     } catch (error) {
       setFeedback({
@@ -212,7 +196,7 @@ function BossBattle({
     } finally {
       setIsCompiling(false);
     }
-  }, [addXp, bossHp, code, defeatBoss, incrementCombo, isCompiling, player.combo, player.hp, resetCombo, takeDamage, world]);
+  }, [addXp, bossHp, code, defeatBoss, incrementCombo, isCompiling, player.combo, player.hp, resetCombo, setUsedOffline, takeDamage, world]);
 
   return (
     <div className="relative min-h-screen bg-[#0a0a1a] text-gray-200">
@@ -256,6 +240,12 @@ function BossBattle({
               {world.boss.description}
             </p>
           </div>
+
+          {usedOffline && (
+            <div className="mb-4 rounded border border-yellow-600/40 bg-yellow-900/20 px-4 py-3 font-mono text-xs text-yellow-300">
+              ⚡ 离线模式 · 结果基于 WASM 解释器，可能与真实 rustc 有差异
+            </div>
+          )}
 
           <div className="overflow-hidden rounded-lg border border-cyber-blue/40 bg-[#0d1117]">
             <div className="flex items-center justify-between border-b border-cyber-blue/30 bg-cyber-dark/80 px-4 py-2">
