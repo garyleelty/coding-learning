@@ -108,5 +108,6 @@ export interface CompileResult {
   compilationErrors: string | null;
   runtimeErrors: string | null;
   warnings?: string[];
+  compilationSource?: 'playground' | 'wasm';
   matchExpected: boolean | null;
 }
