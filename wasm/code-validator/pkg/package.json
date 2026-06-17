@@ -1,0 +1,14 @@
+{
+  "name": "code-validator",
+  "version": "0.1.0",
+  "files": [
+    "code_validator_bg.wasm",
+    "code_validator.js",
+    "code_validator.d.ts"
+  ],
+  "module": "code_validator.js",
+  "types": "code_validator.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
