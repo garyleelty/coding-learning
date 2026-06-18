@@ -15,9 +15,9 @@ export interface TestCase {
 }
 
 // Level types
-export type LevelType = 'choice' | 'fill' | 'order' | 'judge';
+export type LevelType = 'choice' | 'fill' | 'order' | 'judge' | 'code';
 
-// Small level (quiz)
+// Small level (quiz or code challenge)
 export interface Level {
   id: string;
   title: string;
@@ -37,6 +37,11 @@ export interface Level {
   shuffledLines?: string[];
   // Judge type
   judgeAnswer?: boolean;
+  // Code challenge type
+  codeTask?: string;
+  codeTemplate?: string;
+  codeTestCases?: TestCase[];
+  codeHints?: string[];
 }
 
 // Boss challenge
@@ -44,6 +49,8 @@ export interface BossChallenge {
   title: string;
   description: string;
   template: string;
+  steps?: string[];
+  hints?: string[];
   validation: {
     required: string[];
     forbidden?: string[];

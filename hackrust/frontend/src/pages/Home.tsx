@@ -104,6 +104,13 @@ export function Home() {
           <span className="font-mono text-xs text-gray-700">
             [ ENTER <span className="text-gray-600">—</span> <span className="text-[#00ff9f]/50">{hasProgress ? '继续' : '开始'}</span> ]
           </span>
+
+          <Link
+            to="/sandbox"
+            className="mt-2 font-mono text-sm text-gray-600 hover:text-[#00ff9f] transition-colors"
+          >
+            {'>'} 打开 Rust 沙盒
+          </Link>
         </div>
 
         {/* Player stats summary */}

@@ -3,6 +3,7 @@ import { WorldMap } from './pages/WorldMap';
 import { Level } from './pages/Level';
 import { Boss } from './pages/Boss';
 import { Home } from './pages/Home';
+import { Sandbox } from './pages/Sandbox';
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
           <Route path="/worlds/:id" element={<WorldMap />} />
           <Route path="/worlds/:id/level/:n" element={<Level />} />
           <Route path="/worlds/:id/boss" element={<Boss />} />
+          <Route path="/sandbox" element={<Sandbox />} />
         </Routes>
       </div>
     </HashRouter>

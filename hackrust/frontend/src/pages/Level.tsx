@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getWorld } from '../data/worlds';
 import type { Level as LevelType } from '../types';
 import { useGameStore } from '../store/gameStore';
-import { CodeBlock, Feedback, ComboIndicator } from '../components';
+import { CodeBlock, CodeRunner, Feedback, ComboIndicator } from '../components';
 
 export function Level() {
   const { id, n } = useParams<{ id: string; n: string }>();
@@ -63,6 +63,8 @@ export function Level() {
         return level.shuffledLines ? sequence.length === level.shuffledLines.length : false;
       case 'judge':
         return selectedAnswer !== null;
+      case 'code':
+        return false; // Code type has its own submit button in CodeRunner
       default:
         return false;
     }
@@ -487,7 +489,34 @@ export function Level() {
           </div>
         )}
 
-        {/* ── Submit button ─────────────────────────────────── */}
+        {/* Code challenge */}
+        {level.type === 'code' && level.codeTemplate && (
+          <div className="mb-8">
+            <CodeRunner
+              task={level.codeTask ?? level.question}
+              template={level.codeTemplate}
+              testCases={level.codeTestCases}
+              hints={level.codeHints}
+              onPass={() => {
+                if (!submitted) {
+                  addXp(75);
+                  incrementCombo();
+                  completeLevel(worldId, level.id, 100);
+                  setSubmitted(true);
+                  setIsCorrect(true);
+                }
+              }}
+              onFail={() => {
+                if (!submitted) {
+                  resetCombo();
+                }
+              }}
+            />
+          </div>
+        )}
+
+        {/* ── Submit button (hidden for code type) ───────────── */}
+        {level.type !== 'code' && (
         <div className="flex justify-center mt-8">
           <button
             onClick={handleSubmit}
@@ -501,6 +530,7 @@ export function Level() {
             提交答案
           </button>
         </div>
+        )}
 
         {/* ── Combo (mobile) ────────────────────────────────── */}
         {playerCombo > 0 && (
@@ -511,7 +541,7 @@ export function Level() {
       </div>
 
       {/* ── Feedback modal ─────────────────────────────────── */}
-      {submitted && (
+      {submitted && level.type !== 'code' && (
         <Feedback
           type={isCorrect ? 'correct' : 'wrong'}
           message={isCorrect ? '回答正确！' : '回答错误'}
@@ -522,6 +552,16 @@ export function Level() {
           }
           onNext={isCorrect ? handleNext : undefined}
           onRetry={!isCorrect ? handleRetry : undefined}
+        />
+      )}
+
+      {/* Code type success feedback */}
+      {submitted && isCorrect && level.type === 'code' && (
+        <Feedback
+          type="correct"
+          message="代码通过！"
+          explanation={level.explanation}
+          onNext={handleNext}
         />
       )}
     </div>
@@ -540,5 +580,7 @@ function typeLabel(type: LevelType['type']): string {
       return '排序题';
     case 'judge':
       return '判断题';
+    case 'code':
+      return '编程题';
   }
 }

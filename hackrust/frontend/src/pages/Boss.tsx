@@ -83,10 +83,14 @@ function BossBattle({
   const [bossHp, setBossHp] = useState(maxBossHp);
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
   const [usedOffline, setUsedOffline] = useState(false);
+  const [, setFailedAttempts] = useState(0);
+  const [visibleHints, setVisibleHints] = useState(0);
 
   const resetBattle = useCallback(() => {
     setFeedback(null);
     setBossHp(maxBossHp);
+    setFailedAttempts(0);
+    setVisibleHints(0);
     heal(player.maxHp);
   }, [heal, maxBossHp, player.maxHp]);
 
@@ -112,6 +116,13 @@ function BossBattle({
         const nextPlayerHp = Math.max(0, player.hp - 10);
         resetCombo();
         takeDamage(10);
+        setFailedAttempts((prev) => {
+          const next = prev + 1;
+          if (next >= 2 && world.boss.hints) {
+            setVisibleHints((h) => Math.min(h + 1, world.boss.hints!.length));
+          }
+          return next;
+        });
         setFeedback({
           type: 'wrong',
           message: nextPlayerHp === 0 ? '系统过载' : '编译错误',
@@ -127,6 +138,13 @@ function BossBattle({
         const nextPlayerHp = Math.max(0, player.hp - 10);
         resetCombo();
         takeDamage(10);
+        setFailedAttempts((prev) => {
+          const next = prev + 1;
+          if (next >= 2 && world.boss.hints) {
+            setVisibleHints((h) => Math.min(h + 1, world.boss.hints!.length));
+          }
+          return next;
+        });
         setFeedback({
           type: 'wrong',
           message: nextPlayerHp === 0 ? '系统过载' : '运行时错误',
@@ -142,6 +160,13 @@ function BossBattle({
         const nextPlayerHp = Math.max(0, player.hp - 10);
         resetCombo();
         takeDamage(10);
+        setFailedAttempts((prev) => {
+          const next = prev + 1;
+          if (next >= 2 && world.boss.hints) {
+            setVisibleHints((h) => Math.min(h + 1, world.boss.hints!.length));
+          }
+          return next;
+        });
         setFeedback({
           type: 'wrong',
           message: nextPlayerHp === 0 ? '系统过载' : '输出不匹配',
@@ -303,6 +328,43 @@ function BossBattle({
             </div>
           </div>
 
+          {world.boss.steps && world.boss.steps.length > 0 && (
+            <div className="rounded-lg border border-cyber-blue/30 bg-cyber-dark/40 p-5">
+              <h2 className="font-mono text-sm font-bold text-cyber-glow">任务步骤</h2>
+              <ol className="mt-3 space-y-2 font-mono text-xs text-gray-400 list-decimal list-inside">
+                {world.boss.steps.map((step, i) => (
+                  <li key={i} className="leading-relaxed">{step}</li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          {world.boss.hints && world.boss.hints.length > 0 && (
+            <div className="rounded-lg border border-yellow-600/30 bg-yellow-900/10 p-5">
+              <div className="flex items-center justify-between">
+                <h2 className="font-mono text-sm font-bold text-yellow-400">提示 Hints</h2>
+                {visibleHints < world.boss.hints.length && (
+                  <button
+                    onClick={() => setVisibleHints((h) => Math.min(h + 1, world.boss.hints!.length))}
+                    className="rounded border border-yellow-600/40 px-3 py-1 font-mono text-xs text-yellow-400 transition-colors hover:bg-yellow-900/30 cursor-pointer"
+                  >
+                    {visibleHints === 0 ? '显示提示' : '下一个提示'}
+                  </button>
+                )}
+              </div>
+              <div className="mt-3 space-y-3 font-mono text-xs text-gray-400">
+                {world.boss.hints.slice(0, visibleHints).map((hint, i) => (
+                  <div key={i} className="rounded bg-yellow-900/20 p-3 text-yellow-200/80 whitespace-pre-wrap">
+                    <span className="text-yellow-500/60">提示 {i + 1}: </span>{hint}
+                  </div>
+                ))}
+                {visibleHints === 0 && (
+                  <p className="text-gray-600 text-xs">答错 2 次后自动显示提示，或点击按钮提前查看</p>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="rounded-lg border border-cyber-blue/30 bg-cyber-dark/40 p-5">
             <h2 className="font-mono text-sm font-bold text-cyber-glow">验证规则</h2>
             <div className="mt-3 space-y-3 font-mono text-xs text-gray-400">
@@ -316,7 +378,7 @@ function BossBattle({
                   ))}
                 </div>
               </div>
-              {world.boss.validation.forbidden && (
+              {world.boss.validation.forbidden && world.boss.validation.forbidden.length > 0 && (
                 <div>
                   <div className="mb-1 text-gray-600">禁止出现</div>
                   <div className="flex flex-wrap gap-2">
