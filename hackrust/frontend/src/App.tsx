@@ -1,14 +1,12 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import { WorldMap } from './pages/WorldMap';
 import { Level } from './pages/Level';
 import { Boss } from './pages/Boss';
 import { Home } from './pages/Home';
 
 export default function App() {
-  const basename = import.meta.env.BASE_URL?.replace(/\/$/, '') || '';
-  
   return (
-    <BrowserRouter basename={basename}>
+    <HashRouter>
       <div className="min-h-screen bg-[#0a0a1a] text-gray-200">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -18,6 +16,6 @@ export default function App() {
           <Route path="/worlds/:id/boss" element={<Boss />} />
         </Routes>
       </div>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
