@@ -29,7 +29,10 @@ impl Scope {
     }
 
     pub fn pop_frame(&mut self) {
-        self.frames.pop();
+        // Keep at least the global frame
+        if self.frames.len() > 1 {
+            self.frames.pop();
+        }
     }
 
     pub fn define(&mut self, name: &str, value: Value) {

@@ -9,8 +9,7 @@ interface LayoutProps {
 
 const navLinks = [
   { to: '/worlds', label: '世界' },
-  { to: '/worlds', label: '手册' },
-  { to: '/profile', label: '档案' },
+  { to: '/sandbox', label: '沙盒' },
 ] as const;
 
 export default function Layout({ children }: LayoutProps) {

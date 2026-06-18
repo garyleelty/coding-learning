@@ -1,1 +1,19 @@
 .superpowers/
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+target/
+
+# Environment
+.env
+.env.local
+*.local
+
+# IDE
+.idea/
+.vscode/
+*.sw?
+.DS_Store
