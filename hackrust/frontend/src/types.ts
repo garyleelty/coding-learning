@@ -42,6 +42,8 @@ export interface Level {
   codeTemplate?: string;
   codeTestCases?: TestCase[];
   codeHints?: string[];
+  exampleCode?: string;
+  exampleOutput?: string;
 }
 
 // Boss challenge

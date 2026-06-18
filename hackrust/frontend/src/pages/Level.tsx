@@ -4,6 +4,7 @@ import { getWorld } from '../data/worlds';
 import type { Level as LevelType } from '../types';
 import { useGameStore } from '../store/gameStore';
 import { CodeBlock, CodeRunner, Feedback, ComboIndicator } from '../components';
+import { compileRust } from '../lib/api';
 
 export function Level() {
   const { id, n } = useParams<{ id: string; n: string }>();
@@ -25,6 +26,11 @@ export function Level() {
   const [submitted, setSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [sequence, setSequence] = useState<number[]>([]);
+
+  // ── Example runner state ───────────────────────────────────
+  const [exampleOutput, setExampleOutput] = useState<string | null>(null);
+  const [exampleRunning, setExampleRunning] = useState(false);
+  const [exampleError, setExampleError] = useState<string | null>(null);
 
   // Fill-blank state
   const blanksCount = useMemo(() => {
@@ -268,6 +274,60 @@ export function Level() {
             <p className="text-sm leading-relaxed text-gray-300 whitespace-pre-wrap">
               {level.lesson}
             </p>
+          </div>
+        )}
+
+        {/* Example code — runnable demo */}
+        {level.exampleCode && (
+          <div className="mb-6 rounded-lg border border-cyan-800/40 bg-[#0d1117]">
+            <div className="flex items-center justify-between border-b border-cyan-800/30 bg-[#161b22] px-4 py-2">
+              <div className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f56]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#27c93f]" />
+              </div>
+              <span className="font-mono text-xs text-gray-500">示例代码</span>
+              <button
+                onClick={async () => {
+                  setExampleRunning(true);
+                  setExampleOutput(null);
+                  setExampleError(null);
+                  try {
+                    const result = await compileRust(level.exampleCode!, level.exampleOutput ?? undefined);
+                    if (result.compilationErrors) setExampleError(result.compilationErrors);
+                    else if (result.runtimeErrors) setExampleError(result.runtimeErrors);
+                    else setExampleOutput(result.output ?? '(无输出)');
+                  } catch (e) {
+                    setExampleError(String(e));
+                  } finally {
+                    setExampleRunning(false);
+                  }
+                }}
+                disabled={exampleRunning}
+                className={`rounded px-3 py-1 font-mono text-xs font-bold transition-all cursor-pointer ${
+                  exampleRunning
+                    ? 'bg-gray-700 text-gray-400'
+                    : 'bg-cyan-700 text-white hover:bg-cyan-600'
+                }`}
+              >
+                {exampleRunning ? '运行中...' : '▶ 运行示例'}
+              </button>
+            </div>
+            <pre className="p-4 font-mono text-sm leading-relaxed text-[#00ff9f]/90 overflow-x-auto">
+              {level.exampleCode}
+            </pre>
+            {exampleOutput !== null && (
+              <div className="border-t border-cyan-800/30 bg-[#0a0e14] p-4">
+                <div className="mb-1 font-mono text-xs text-gray-500">输出</div>
+                <pre className="font-mono text-sm text-gray-200 whitespace-pre-wrap">{exampleOutput}</pre>
+              </div>
+            )}
+            {exampleError !== null && (
+              <div className="border-t border-red-800/30 bg-red-950/30 p-4">
+                <div className="mb-1 font-mono text-xs text-red-400">错误</div>
+                <pre className="font-mono text-sm text-red-300 whitespace-pre-wrap">{exampleError}</pre>
+              </div>
+            )}
           </div>
         )}
 
