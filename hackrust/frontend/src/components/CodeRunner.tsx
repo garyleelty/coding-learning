@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { TestCase } from '../types';
 import { compileRust } from '../lib/api';
 
@@ -27,8 +27,40 @@ export default function CodeRunner({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [visibleHints, setVisibleHints] = useState(0);
   const [failCount, setFailCount] = useState(0);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const expectedOutput = testCases?.[0]?.expected ?? null;
+
+  // Tab key support — insert spaces instead of moving focus
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const textarea = e.currentTarget;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newCode = code.substring(0, start) + '    ' + code.substring(end);
+      setCode(newCode);
+      // Restore cursor position
+      requestAnimationFrame(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + 4;
+      });
+    }
+    // Auto-close brackets
+    const pairs: Record<string, string> = { '{': '}', '(': ')', '[': ']', '"': '"', "'": "'" };
+    if (pairs[e.key]) {
+      const textarea = e.currentTarget;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      if (start === end) {
+        e.preventDefault();
+        const newCode = code.substring(0, start) + e.key + pairs[e.key] + code.substring(end);
+        setCode(newCode);
+        requestAnimationFrame(() => {
+          textarea.selectionStart = textarea.selectionEnd = start + 1;
+        });
+      }
+    }
+  }, [code]);
 
   const handleRun = useCallback(async () => {
     setStatus('running');
@@ -82,7 +114,6 @@ export default function CodeRunner({
         });
         onFail?.();
       } else {
-        // No expected output to compare — just show output
         setStatus('idle');
       }
     } catch (err) {
@@ -97,7 +128,12 @@ export default function CodeRunner({
     setOutput(null);
     setStatus('idle');
     setErrorMsg(null);
+    setFailCount(0);
+    setVisibleHints(0);
   }, [template]);
+
+  // Line numbers
+  const lineCount = code.split('\n').length;
 
   return (
     <div className="space-y-4">
@@ -120,12 +156,24 @@ export default function CodeRunner({
           <span className="font-mono text-xs text-gray-500">main.rs</span>
           <span className="font-mono text-xs text-cyan-400/60">rust</span>
         </div>
-        <textarea
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          spellCheck={false}
-          className="min-h-[16rem] w-full resize-y bg-transparent p-4 font-mono text-sm leading-relaxed text-[#00ff9f]/90 outline-none placeholder:text-gray-700"
-        />
+        <div className="flex">
+          {/* Line numbers */}
+          <div className="flex-shrink-0 select-none border-r border-cyan-800/20 bg-[#0d1117] py-4 pr-2 text-right">
+            {Array.from({ length: lineCount }, (_, i) => (
+              <div key={i} className="px-2 font-mono text-xs leading-relaxed text-gray-600">
+                {i + 1}
+              </div>
+            ))}
+          </div>
+          <textarea
+            ref={textareaRef}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            onKeyDown={handleKeyDown}
+            spellCheck={false}
+            className="min-h-[16rem] w-full resize-y bg-transparent p-4 font-mono text-sm leading-relaxed text-[#00ff9f]/90 outline-none placeholder:text-gray-700"
+          />
+        </div>
       </div>
 
       {/* Buttons */}
