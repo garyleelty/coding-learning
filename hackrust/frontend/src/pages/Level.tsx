@@ -498,6 +498,7 @@ export function Level() {
               template={level.exampleCode ?? level.codeTemplate}
               testCases={level.codeTestCases}
               hints={level.codeHints}
+              solutionCode={level.solutionCode}
               onPass={() => {
                 if (!submitted) {
                   addXp(75);

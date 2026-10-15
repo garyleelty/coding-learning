@@ -30,17 +30,18 @@ export const worlds: World[] = [
         lesson: '【println! 宏】\nprintln! 是 Rust 最常用的输出宏，把文字显示到屏幕上。\n\n【基本语法】\nprintln!("你要输出的文字");\n\n【规则】\n- 文字必须用英文双引号 "..." 包围\n- 每个 println! 输出一行，自动换行\n- 末尾必须有分号 ;\n\n【什么是宏】\n宏名以 ! 结尾，比如 println!。宏是一种代码生成工具，编译器会把它展开成真正的代码。你暂时可以把它当作"高级函数"来用。\n\n【试试看】\n修改双引号里的文字，运行看输出怎么变。',
         question: '修改文字，让它输出 “Hello, Hacker!”',
         codeTask: '把 println! 里的文字改成 “Hello, Hacker!”，然后运行',
-        codeTemplate: 'fn main() {\n    println!(“Hello, Rust!”);\n}',
-        exampleCode: 'fn main() {\n    println!(“Hello, Rust!”);\n}',
+        codeTemplate: 'fn main() {\n    println!("Hello, Rust!");\n}',
+        exampleCode: 'fn main() {\n    println!("Hello, Rust!");\n}',
         exampleOutput: 'Hello, Rust!',
         codeTestCases: [
           { input: '', expected: 'Hello, Hacker!', description: '输出 Hello, Hacker!' },
         ],
         codeHints: [
-          'println! 的用法：println!(“你要输出的文字”);',
-          'println!(“Hello, Hacker!”);',
+          'println! 的用法：println!("你要输出的文字");',
+          'println!("Hello, Hacker!");',
         ],
         solution: 'Hello, Hacker!',
+        solutionCode: '// 第一个程序：println! 是 Rust 的宏，会把内容打印到标准输出并自动换行\nfn main() {\n    // 把要输出的文字改成题目要求的内容\n    println!("Hello, Hacker!");\n}\n',
         explanation: 'println! 是 Rust 的输出宏，用英文双引号包围要输出的文字。',
       },
       {
@@ -50,37 +51,39 @@ export const worlds: World[] = [
         lesson: '【多行输出】\n每个 println! 宏输出一行文字。想要输出多行，就写多个 println!。\n\n【执行顺序】\n代码从上到下执行，先写的先输出。顺序很重要！\n\n【示例】\nprintln!("第一行");\nprintln!("第二行");\nprintln!("第三行");\n// 输出三行，每行一个\n\n【动手实验】\n- 试试删掉一行，看输出变化\n- 试试加一行，看输出变化\n- 试试交换顺序，看输出变化\n\n【关键要点】\nRust 程序从 main 函数开始执行，代码按顺序从上到下运行。',
         question: '改成输出两行：System online 和 Ready to hack',
         codeTask: '修改代码，只输出两行：\nSystem online\nReady to hack',
-        codeTemplate: 'fn main() {\n    println!(“Line 1”);\n    println!(“Line 2”);\n    println!(“Line 3”);\n}',
-        exampleCode: 'fn main() {\n    println!(“Line 1”);\n    println!(“Line 2”);\n    println!(“Line 3”);\n}',
+        codeTemplate: 'fn main() {\n    println!("Line 1");\n    println!("Line 2");\n    println!("Line 3");\n}',
+        exampleCode: 'fn main() {\n    println!("Line 1");\n    println!("Line 2");\n    println!("Line 3");\n}',
         exampleOutput: 'Line 1\nLine 2\nLine 3',
         codeTestCases: [
           { input: '', expected: 'System online\nReady to hack', description: '输出两行' },
         ],
         codeHints: [
-          '每行一个 println!(“...”);',
-          'println!(“System online”);\nprintln!(“Ready to hack”);',
+          '每行一个 println!("...");',
+          'println!("System online");\nprintln!("Ready to hack");',
         ],
         solution: 'System online\nReady to hack',
+        solutionCode: 'fn main() {\n    // 只保留需要的两行输出，多余的 println! 删掉\n    println!("System online");\n    println!("Ready to hack");\n}\n',
         explanation: '每个 println! 输出一行，多个 println! 按顺序输出多行。',
       },
       {
         id: 'w00-l04',
         title: '用变量存储数据',
         type: 'code',
-        lesson: '【变量】\n变量就是给一个值起名字，方便后续使用。\n\n【声明变量】\nlet x = 5;\n- let 是关键字，表示”声明一个变量”\n- x 是变量名\n- 5 是初始值\n- 末尾加分号\n\n【格式化输出】\nprintln!(“x = {}”, x);\n- {} 是占位符，会被后面的变量值替换\n- 可以有多个 {}，按顺序对应后面的变量\n\n【变量命名规则】\n- 只能用字母、数字、下划线\n- 不能以数字开头\n- 区分大小写（name 和 Name 是不同变量）\n- 推荐用 snake_case（小写加下划线）',
+        lesson: '【变量】\n变量就是给一个值起名字，方便后续使用。\n\n【声明变量】\nlet x = 5;\n- let 是关键字，表示”声明一个变量”\n- x 是变量名\n- 5 是初始值\n- 末尾加分号\n\n【格式化输出】\nprintln!("x = {}", x);\n- {} 是占位符，会被后面的变量值替换\n- 可以有多个 {}，按顺序对应后面的变量\n\n【变量命名规则】\n- 只能用字母、数字、下划线\n- 不能以数字开头\n- 区分大小写（name 和 Name 是不同变量）\n- 推荐用 snake_case（小写加下划线）',
         question: '把 x 改成 42，看输出怎么变',
         codeTask: '把 x 的值改成 42，运行看输出',
-        codeTemplate: 'fn main() {\n    let x = 5;\n    println!(“x = {}”, x);\n}',
-        exampleCode: 'fn main() {\n    let x = 5;\n    println!(“x = {}”, x);\n}',
+        codeTemplate: 'fn main() {\n    let x = 5;\n    println!("x = {}", x);\n}',
+        exampleCode: 'fn main() {\n    let x = 5;\n    println!("x = {}", x);\n}',
         exampleOutput: 'x = 5',
         codeTestCases: [
           { input: '', expected: '42', description: '输出变量的值' },
         ],
         codeHints: [
-          'let x = 5; 创建变量，println!(“{}”, x); 输出变量',
-          'let x = 42;\nprintln!(“{}”, x);',
+          'let x = 5; 创建变量，println!("{}", x); 输出变量',
+          'let x = 42;\nprintln!("{}", x);',
         ],
         solution: '42',
+        solutionCode: 'fn main() {\n    // let 声明不可变变量；把值改成 42\n    let x = 42;\n    // {} 是占位符，按顺序被后面的参数替换\n    println!("{}", x);\n}\n',
         explanation: 'let 声明变量，{} 是 println! 的占位符，会被后面的变量值替换。',
       },
       {
@@ -90,16 +93,17 @@ export const worlds: World[] = [
         lesson: '【变量计算】\nlet 不仅能存储固定值，还能存储计算结果。\n\n【示例】\nlet a = 10;\nlet b = 32;\nlet result = a + b;  // result = 42\n\n【关键要点】\n- let 右边可以是任意表达式\n- 表达式会先计算，结果存入变量\n- 变量可以参与后续计算\n\n【格式化输出多个值】\nprintln!("Result: {}", result);\nprintln!("{} + {} = {}", a, b, result);\n// 多个 {} 按顺序对应后面的变量\n\n【动手实验】\n试试修改 a 和 b 的值，看 result 怎么变。',
         question: '写一个完整的程序：计算并输出',
         codeTask: '1. 创建变量 a = 10, b = 32\n2. 创建变量 result = a + b\n3. 输出 “Result: 42”',
-        codeTemplate: 'fn main() {\n    // TODO: 创建变量 a 和 b\n    // TODO: 计算 a + b 存入 result\n    // TODO: 输出 “Result: 42”\n}',
+        codeTemplate: 'fn main() {\n    // TODO: 创建变量 a 和 b\n    // TODO: 计算 a + b 存入 result\n    // TODO: 输出 "Result: 42"\n}',
         codeTestCases: [
           { input: '', expected: 'Result: 42', description: '计算并输出' },
         ],
         codeHints: [
           'let a = 10; let b = 32; let result = a + b;',
-          'println!(“Result: {}”, result); — 用 {} 做占位符',
-          'let a = 10;\nlet b = 32;\nlet result = a + b;\nprintln!(“Result: {}”, result);',
+          'println!("Result: {}", result); — 用 {} 做占位符',
+          'let a = 10;\nlet b = 32;\nlet result = a + b;\nprintln!("Result: {}", result);',
         ],
         solution: 'Result: 42',
+        solutionCode: 'fn main() {\n    // 1. 声明两个变量 a 和 b\n    let a = 10;\n    let b = 32;\n    // 2. 计算两数之和，结果是 i32 类型\n    let result = a + b;\n    // 3. 用 {} 占位符把 result 嵌入到输出文本中\n    println!("Result: {}", result);\n}\n',
         explanation: 'let 可以创建变量并计算，println! 中 {} 会被变量值替换。',
       },
     ],
@@ -163,10 +167,11 @@ export const worlds: World[] = [
         ],
         codeHints: [
           'let mut x = 10; — mut 让变量可变',
-          'x = 20; 修改变量，println!(“{}”, x); 输出',
-          'let mut x = 10;\nx = 20;\nprintln!(“{}”, x);',
+          'x = 20; 修改变量，println!("{}", x); 输出',
+          'let mut x = 10;\nx = 20;\nprintln!("{}", x);',
         ],
         solution: '20',
+        solutionCode: '// 关键点：Rust 变量默认不可变（immutable）。\n// 想在声明后再次赋值，必须在 let 后面加 mut（mutable）。\nfn main() {\n    let mut x = 10; // 加 mut 才允许后续修改\n    x = 20;         // 重新赋值：x 从 10 变成 20\n    println!("{}", x); // 输出最终的值\n}\n',
         explanation: 'let mut 声明可变变量，之后可以用 = 修改值。',
       },
       {
@@ -182,17 +187,18 @@ export const worlds: World[] = [
         ],
         codeHints: [
           'let remaining = hp - damage; — 用 let 存储计算结果',
-          'println!(“Remaining: {}”, remaining);',
-          'let remaining = hp - damage;\nprintln!(“Remaining: {}”, remaining);',
+          'println!("Remaining: {}", remaining);',
+          'let remaining = hp - damage;\nprintln!("Remaining: {}", remaining);',
         ],
         solution: 'Remaining: 75',
+        solutionCode: 'fn main() {\n    // 关键点：变量先声明再参与计算，Rust 会根据字面量推断为 i32。\n    let hp = 100;\n    let damage = 25;\n    let remaining = hp - damage; // 计算剩余血量\n    println!("Remaining: {}", remaining); // 用 {} 占位符把值插入字符串\n}\n',
         explanation: 'let 可以创建变量并计算，变量名可以是任意合法标识符。',
       },
       {
         id: 'w01-l04',
         title: 'Shadowing',
         type: 'code',
-        lesson: '【Shadowing（遮蔽）】\nRust 允许用 let 重新声明同名变量。新变量会”遮住”旧变量，这叫 shadowing。\n\n【示例】\nlet x = 5;\nlet x = x + 10;  // 新的 x 遮住旧的 x\nprintln!(“{}”, x);  // 输出 15\n\n【与 mut 的区别】\n- shadowing 创建的是新变量（可以改变类型）\n- mut 是修改同一个变量（类型不能变）\n\n【shadowing 可以改变类型】\nlet spaces = “   “;        // &str 类型\nlet spaces = spaces.len();  // usize 类型 ✅\n\nlet mut spaces = “   “;\nspaces = spaces.len();      // ❌ 类型不能变\n\n【使用场景】\n- 类型转换时保持变量名\n- 逐步处理数据\n- 减少变量名数量',
+        lesson: '【Shadowing（遮蔽）】\nRust 允许用 let 重新声明同名变量。新变量会”遮住”旧变量，这叫 shadowing。\n\n【示例】\nlet x = 5;\nlet x = x + 10;  // 新的 x 遮住旧的 x\nprintln!("{}", x);  // 输出 15\n\n【与 mut 的区别】\n- shadowing 创建的是新变量（可以改变类型）\n- mut 是修改同一个变量（类型不能变）\n\n【shadowing 可以改变类型】\nlet spaces = "   ";        // &str 类型\nlet spaces = spaces.len();  // usize 类型 ✅\n\nlet mut spaces = "   ";\nspaces = spaces.len();      // ❌ 类型不能变\n\n【使用场景】\n- 类型转换时保持变量名\n- 逐步处理数据\n- 减少变量名数量',
         question: '用 shadowing 修改变量的值',
         codeTask: '1. 创建 x = 5\n2. 用 let x = x + 10 重新声明 x\n3. 输出 x（应为 15）',
         codeTemplate: 'fn main() {\n    let x = 5;\n    // 用 shadowing 把 x 改成 15\n    \n    // 输出 x\n}',
@@ -201,10 +207,11 @@ export const worlds: World[] = [
         ],
         codeHints: [
           'let x = x + 10; — 用 let 重新声明同名变量',
-          'println!(“{}”, x);',
-          'let x = x + 10;\nprintln!(“{}”, x);',
+          'println!("{}", x);',
+          'let x = x + 10;\nprintln!("{}", x);',
         ],
         solution: '15',
+        solutionCode: 'fn main() {\n    let x = 5;\n    // 关键点：shadowing（遮蔽）——用新的 let 声明同名变量，\n    // 新变量可以复用旧变量的值，且不要求原来的变量是 mut。\n    let x = x + 10;\n    println!("{}", x); // 此时 x 是 15\n}\n',
         explanation: 'Shadowing 允许重新声明同名变量，新变量覆盖旧变量。',
       },
       {
@@ -220,9 +227,10 @@ export const worlds: World[] = [
         ],
         codeHints: [
           'point.0 是第一个元素，point.1 是第二个',
-          'println!(“x: {}, y: {}”, point.0, point.1);',
+          'println!("x: {}, y: {}", point.0, point.1);',
         ],
         solution: 'x: 10, y: 20',
+        solutionCode: 'fn main() {\n    // 关键点：元组把多个不同类型的值打包在一起，用 .0 .1 按索引访问。\n    let point = (10, 20);\n    println!("x: {}, y: {}", point.0, point.1); // point.0 是 x，point.1 是 y\n}\n',
         explanation: '元组用 .0 .1 .2 访问元素，索引从 0 开始。',
       },
       {
@@ -238,10 +246,11 @@ export const worlds: World[] = [
         ],
         codeHints: [
           'let arr = [10, 20, 30]; — 方括号定义数组',
-          'println!(“{}”, arr[0]); — 索引从 0 开始',
-          'let arr = [10, 20, 30];\nprintln!(“{}”, arr[0]);',
+          'println!("{}", arr[0]); — 索引从 0 开始',
+          'let arr = [10, 20, 30];\nprintln!("{}", arr[0]);',
         ],
         solution: '10',
+        solutionCode: 'fn main() {\n    // 关键点：数组长度固定，元素类型相同，用 下标 从 0 开始访问。\n    let arr = [10, 20, 30];\n    println!("{}", arr[0]); // arr[0] 是第一个元素\n}\n',
         explanation: '数组用方括号定义，用索引访问元素，索引从 0 开始。',
       },
     ],
@@ -287,6 +296,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: '13, 7, 30', description: '三个算术结果' }],
         codeHints: ['println!("{}, {}, {}", a, b, c); — 用多个 {} 占位符'],
         solution: '13, 7, 30',
+        solutionCode: 'fn main() {\n    // Rust 的整数算术运算符：+ - * / %，优先级和数学一致\n    let a = 10 + 3; // 加法: 13\n    let b = 10 - 3; // 减法: 7\n    let c = 10 * 3; // 乘法: 30\n    // {} 是占位符，会按顺序依次填入后面的参数，用逗号分隔即可\n    println!("{}, {}, {}", a, b, c);\n}\n',
         explanation: '+ 加、- 减、* 乘，整数运算结果还是整数。',
       },
       {
@@ -300,6 +310,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: 'Quotient: 14, Remainder: 2', description: '商和余数' }],
         codeHints: ['println!("Quotient: {}, Remainder: {}", quotient, remainder);'],
         solution: 'Quotient: 14, Remainder: 2',
+        solutionCode: 'fn main() {\n    // 整数除法 / 会向下取整（截断小数部分），所以 100 / 7 == 14\n    let quotient = 100 / 7;\n    // % 是取余运算符，得到除法剩下的部分，100 % 7 == 2\n    let remainder = 100 % 7;\n    println!("Quotient: {}, Remainder: {}", quotient, remainder);\n}\n',
         explanation: '/ 取整数商，% 取余数。',
       },
       {
@@ -313,6 +324,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: '100 > 50: true', description: '比较结果' }],
         codeHints: ['let is_greater = 100 > 50; — 比较返回 bool', 'println!("100 > 50: {}", is_greater);'],
         solution: '100 > 50: true',
+        solutionCode: 'fn main() {\n    // 比较运算符 > 会返回 bool 类型的值，可以直接用 let 绑定到变量\n    let is_greater = 100 > 50;\n    // bool 用 {} 打印出来就是小写的 true / false\n    println!("100 > 50: {}", is_greater);\n}\n',
         explanation: '比较运算符返回布尔值，> 判断左边是否大于右边。',
       },
       {
@@ -326,6 +338,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: 'AND: false\nOR: true', description: '布尔运算结果' }],
         codeHints: ['let and_result = a && b; let or_result = a || b;', 'println!("AND: {}", and_result);'],
         solution: 'AND: false\nOR: true',
+        solutionCode: 'fn main() {\n    let a = true;\n    let b = false;\n    let and_result = a && b; // 逻辑与：两边都为 true 才为 true\n    let or_result = a || b;  // 逻辑或：只要有一边为 true 就为 true\n    println!("AND: {}", and_result);\n    println!("OR: {}", or_result);\n}\n',
         explanation: '&& 要求两边都为真，|| 只要一边为真。',
       },
       {
@@ -339,6 +352,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: '25', description: '复合赋值结果' }],
         codeHints: ['x -= 25; 然后 x /= 3;', 'let mut x = 100;\nx -= 25;\nx /= 3;\nprintln!("{}", x);'],
         solution: '25',
+        solutionCode: 'fn main() {\n    let mut x = 100; // 要修改必须声明为 mut\n    x -= 25;         // 复合赋值，等价于 x = x - 25，此时 x == 75\n    x /= 3;          // 等价于 x = x / 3，整数除法 75 / 3 == 25\n    println!("{}", x);\n}\n',
         explanation: '+= -= *= /= 是简写的赋值运算符。',
       },
       {
@@ -352,6 +366,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: 'Result: 3.3333333333333335', description: '浮点除法' }],
         codeHints: ['let result = x as f64 / y as f64;', 'println!("Result: {}", result);'],
         solution: 'Result: 3.3333333333333335',
+        solutionCode: 'fn main() {\n    let x: i32 = 10;\n    let y: i32 = 3;\n    // 两个整数相除会得到整数，所以必须先用 as 转成 f64 再做浮点除法\n    let result = x as f64 / y as f64;\n    println!("Result: {}", result);\n}\n',
         explanation: 'as 做类型转换，整数转浮点才能得到小数结果。',
       },
       {
@@ -365,6 +380,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: '30\n20', description: '运算优先级' }],
         codeHints: ['括号改变优先级：(10 + 5) * 2 = 30，没有括号先算乘法', 'println!("{}", (10 + 5) * 2);'],
         solution: '30\n20',
+        solutionCode: 'fn main() {\n    // 括号优先级最高，先算 10 + 5 = 15，再乘 2 得 30\n    let with_parens = (10 + 5) * 2;\n    // 没有括号时 * 的优先级高于 +，先算 5 * 2 = 10，再加 10 得 20\n    let without_parens = 10 + 5 * 2;\n    println!("{}", with_parens);\n    println!("{}", without_parens);\n}\n',
         explanation: '括号改变运算优先级，先乘除后加减。',
       },
       {
@@ -378,6 +394,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: 'Area: 78.53981633974483', description: '圆面积' }],
         codeHints: ['let area = pi * radius * radius;', 'println!("Area: {}", area);'],
         solution: 'Area: 78.53981633974483',
+        solutionCode: 'fn main() {\n    let radius = 5.0;              // 字面量带 .0，类型自动推断为 f64\n    let pi = 3.141592653589793;    // f64 能表示约 15~17 位有效数字\n    // 面积公式: π * r * r，浮点乘法顺序不影响结果\n    let area = pi * radius * radius;\n    println!("Area: {}", area);\n}\n',
         explanation: '浮点数运算用 f64 类型，精度更高。',
       },
     ],
@@ -424,6 +441,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: 'big', description: '判断大小' }],
         codeHints: ['if x > 5 { println!("big"); } else { println!("small"); }'],
         solution: 'big',
+        solutionCode: 'fn main() {\n    // x > 5 成立时进入 if 分支，因此输出 "big"\n    let x = 10;\n    // if 的条件必须是 bool 类型，Rust 不像 C 那样把非 0 当成真\n    if x > 5 {\n        println!("big");\n    } else {\n        println!("small");\n    }\n}\n',
         explanation: 'if 条件为真执行 if 块，否则执行 else 块。',
       },
       {
@@ -437,6 +455,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: 'odd', description: '判断奇偶' }],
         codeHints: ['if x % 2 == 0 { println!("even"); } else { println!("odd"); }'],
         solution: 'odd',
+        solutionCode: 'fn main() {\n    // 7 是奇数，所以走 else 分支\n    let x = 7;\n    // % 取余：x % 2 == 0 表示能被 2 整除，即偶数\n    if x % 2 == 0 {\n        println!("even");\n    } else {\n        println!("odd");\n    }\n}\n',
         explanation: '% 2 == 0 判断是否为偶数。',
       },
       {
@@ -450,6 +469,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: 'Grade: B', description: '分数等级' }],
         codeHints: ['if score >= 90 { ... } else if score >= 80 { ... } else { ... }', 'println!("Grade: {}", grade); — 先存入变量再输出'],
         solution: 'Grade: B',
+        solutionCode: 'fn main() {\n    let score = 85;\n    // else if 从上往下依次判断，命中一个分支后后面的都不再检查\n    let grade = if score >= 90 {\n        "A"\n    } else if score >= 80 {\n        // 85 >= 90 不成立，但 85 >= 80 成立，所以等级是 B\n        "B"\n    } else {\n        "C"\n    };\n    println!("Grade: {}", grade);\n}\n',
         explanation: 'else if 链从上到下检查，执行第一个为真的分支。',
       },
       {
@@ -465,6 +485,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: '1\n2\n3\n4\n5', description: '遍历 1-5' }],
         codeHints: ['for i in 1..=5 { println!("{}", i); } — ..= 包含结束值'],
         solution: '1\n2\n3\n4\n5',
+        solutionCode: 'fn main() {\n    // Rust 的区间 a..b 是左闭右开：1..6 表示 1,2,3,4,5\n    for i in 1..6 {\n        println!("{}", i);\n    }\n}\n',
         explanation: 'for i in 范围 遍历每个值，..= 包含结束值。',
       },
       {
@@ -478,6 +499,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: '5\n4\n3\n2\n1', description: '倒计时' }],
         codeHints: ['while x > 0 { println!("{}", x); x -= 1; }'],
         solution: '5\n4\n3\n2\n1',
+        solutionCode: 'fn main() {\n    // 需要修改 x，所以必须声明为 mut\n    let mut x = 5;\n    // 只要 x > 0 就继续循环，每次先打印再减 1\n    while x > 0 {\n        println!("{}", x);\n        x -= 1;\n    }\n}\n',
         explanation: 'while 条件为真时执行循环体，每次 x 减 1。',
       },
       {
@@ -491,6 +513,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: '3', description: 'break 跳出' }],
         codeHints: ['loop { x += 1; if x == 3 { break; } }'],
         solution: '3',
+        solutionCode: 'fn main() {\n    let mut x = 0;\n    // loop 是无限循环，靠 break 退出\n    loop {\n        x += 1;\n        // 当 x 增长到 3 时跳出循环，此时 x 的值保留为 3\n        if x == 3 {\n            break;\n        }\n    }\n    println!("{}", x);\n}\n',
         explanation: 'loop 无限循环，break 跳出。',
       },
       {
@@ -504,6 +527,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: '0\n1\n3\n4', description: '跳过 2' }],
         codeHints: ['if i == 2 { continue; } — continue 跳过本次迭代'],
         solution: '0\n1\n3\n4',
+        solutionCode: 'fn main() {\n    for i in 0..5 {\n        // continue 直接进入下一轮循环，跳过本轮剩下的代码\n        if i == 2 {\n            continue;\n        }\n        println!("{}", i);\n    }\n}\n',
         explanation: 'continue 跳过当前迭代，继续下一次。',
       },
       {
@@ -517,6 +541,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: 'two', description: 'match 匹配' }],
         codeHints: ['match x { 1 => println!("one"), 2 => println!("two"), _ => println!("other") }'],
         solution: 'two',
+        solutionCode: 'fn main() {\n    let x = 2;\n    // match 必须穷尽所有可能，_ 是兜底通配模式\n    let word = match x {\n        1 => "one",\n        2 => "two",\n        _ => "other",\n    };\n    println!("{}", word);\n}\n',
         explanation: 'match 匹配值，_ 匹配所有其他情况。',
       },
     ],
@@ -565,6 +590,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: 'Length: 3', description: 'Vec 长度' }],
         codeHints: ['v.push(30); 然后 println!("Length: {}", v.len());'],
         solution: 'Length: 3',
+        solutionCode: 'fn main() {\n    // 用 vec! 宏创建一个动态数组（Vec<i32>）\n    let mut v = vec![10, 20];\n    // push 在末尾追加元素，所以 v 必须是 mut\n    v.push(30);\n    // len() 返回元素个数（usize）\n    println!("Length: {}", v.len());\n}\n',
         explanation: 'vec! 创建 Vec，push 添加元素，len 获取长度。',
       },
       {
@@ -578,6 +604,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: 'Sum: 15', description: '求和' }],
         codeHints: ['for num in &v { sum += num; }'],
         solution: 'Sum: 15',
+        solutionCode: 'fn main() {\n    let v = vec![1, 2, 3, 4, 5];\n    let mut sum = 0;\n    // &v 借用 Vec 进行遍历，num 是 &i32；*num 解引用取出 i32\n    for num in &v {\n        sum += *num;\n    }\n    println!("Sum: {}", sum);\n}\n',
         explanation: 'for num in &v 遍历 Vec 的每个元素。',
       },
       {
@@ -591,6 +618,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: 'Score: 100', description: 'HashMap' }],
         codeHints: ['data.insert("score", 100); 然后 data["score"] 访问值', 'println!("Score: {}", data["score"]);'],
         solution: 'Score: 100',
+        solutionCode: 'use std::collections::HashMap;\n\nfn main() {\n    // HashMap::new() 创建空映射，键值类型由后面的 insert 推断\n    let mut data = HashMap::new();\n    // insert 插入 "score" -> 100 键值对\n    data.insert("score", 100);\n    // 用索引取回值；这里存的是 i32\n    println!("Score: {}", data["score"]);\n}\n',
         explanation: 'HashMap::new() 创建映射，insert 添加键值对，[] 访问值。',
       },
       {
@@ -604,6 +632,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: 'Hello, world!', description: '字符串拼接' }],
         codeHints: ['s.push_str(", world!");'],
         solution: 'Hello, world!',
+        solutionCode: 'fn main() {\n    // String 是堆上可增长的 UTF-8 字符串\n    let mut s = String::from("Hello");\n    // push_str 追加一个字符串切片 &str，原地修改\n    s.push_str(", world!");\n    println!("{}", s);\n}\n',
         explanation: 'String::from 创建字符串，push_str 追加内容。',
       },
       {
@@ -617,6 +646,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: 'Alice is 25 years old', description: 'format!' }],
         codeHints: ['let info = format!("{} is {} years old", name, age);', 'println!("{}", info);'],
         solution: 'Alice is 25 years old',
+        solutionCode: 'fn main() {\n    let name = "Alice";\n    let age = 25;\n    // format! 按格式生成一个新的 String（不会打印）\n    let info = format!("{} is {} years old", name, age);\n    println!("{}", info);\n}\n',
         explanation: 'format! 用法和 println! 一样，但返回 String。',
       },
       {
@@ -630,6 +660,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: 'name: Alice, hp: 100', description: '元组访问' }],
         codeHints: ['println!("name: {}, hp: {}", player.0, player.1);'],
         solution: 'name: Alice, hp: 100',
+        solutionCode: 'fn main() {\n    // 元组把不同类型的值组合在一起\n    let player = ("Alice", 100, true);\n    // .0 / .1 按位置访问元组元素\n    println!("name: {}, hp: {}", player.0, player.1);\n}\n',
         explanation: '元组用 .0 .1 .2 访问元素。',
       },
       {
@@ -643,6 +674,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: 'Average: 87', description: '平均分' }],
         codeHints: ['for s in &scores { sum += s; }', 'sum / scores.len() as i32 — len() 返回 usize，需要 as i32 转换'],
         solution: 'Average: 87',
+        solutionCode: 'fn main() {\n    let scores = vec![85, 92, 78, 95, 88];\n    let mut sum = 0;\n    // 累加所有分数（sum 与元素同为 i32，无需解引用）\n    for score in &scores {\n        sum += score;\n    }\n    // 整数除法会向下取整：438 / 5 = 87\n    let avg = sum / scores.len() as i32;\n    println!("Average: {}", avg);\n}\n',
         explanation: '综合使用 Vec、for 循环和类型转换。',
       },
       {
@@ -656,6 +688,7 @@ export const worlds: World[] = [
         codeTestCases: [{ input: '', expected: 'Total: 100', description: '迭代器求和' }],
         codeHints: ['let total: i32 = v.iter().sum(); — 需要标注类型', 'println!("Total: {}", total);'],
         solution: 'Total: 100',
+        solutionCode: 'fn main() {\n    let v = vec![10, 20, 30, 40];\n    // iter() 产生元素的引用，sum() 把它们加起来；标注类型让 sum 知道累加成 i32\n    let total: i32 = v.iter().sum();\n    println!("Total: {}", total);\n}\n',
         explanation: 'iter().sum() 是迭代器的便捷求和方法。',
       },
     ],
@@ -716,6 +749,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '10', description: '加法函数' }],
         codeHints: ['fn add(a: i32, b: i32) -> i32 { a + b }', 'println!("{}", add(3, 7));'],
         solution: '10',
+        solutionCode: '// 第一关：定义函数\n// 关键点：Rust 用 fn 关键字定义函数，参数必须标注类型，\n// 返回值用 -> 类型 标注。最后一个表达式的值就是返回值（不写分号）。\n\nfn add(a: i32, b: i32) -> i32 {\n    a + b // 这就是返回值，注意没有分号\n}\n\nfn main() {\n    // 调用 add(3, 7)，结果是 10，再打印出来\n    println!("{}", add(3, 7));\n}\n',
         explanation: 'fn 定义函数，最后一个表达式（无分号）是返回值。',
       },
       {
@@ -729,6 +763,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Area: 50', description: '面积函数' }],
         codeHints: ['fn area(w: i32, h: i32) -> i32 { w * h }'],
         solution: 'Area: 50',
+        solutionCode: '// 第二关：函数参数和返回值\n// 关键点：多个参数用逗号分隔，每个参数都要写 名字: 类型。\n// 函数体最后一行不加分号，它的值就是返回给调用者的结果。\n\nfn area(w: i32, h: i32) -> i32 {\n    w * h // 直接返回乘积\n}\n\nfn main() {\n    println!("Area: {}", area(10, 5));\n}\n',
         explanation: '函数用 fn 定义，参数和返回值都需要类型标注。',
       },
       {
@@ -742,6 +777,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'negative', description: '判断正负' }],
         codeHints: ['fn sign(x: i32) -> &str { if x > 0 { "positive" } else if x < 0 { "negative" } else { "zero" } }'],
         solution: 'negative',
+        solutionCode: '// 第三关：条件返回\n// 关键点：用 if / else if / else 分支，每个分支的最后一个表达式就是返回值。\n// 返回字符串字面量时，类型是 &\'static str（也就是题目说的 &str）。\n\nfn sign(x: i32) -> &\'static str {\n    if x > 0 {\n        "positive" // 大于 0\n    } else if x < 0 {\n        "negative" // 小于 0\n    } else {\n        "zero" // 等于 0\n    }\n}\n\nfn main() {\n    println!("{}", sign(-5));\n}\n',
         explanation: 'if-else 可以作为表达式，每个分支的值就是返回值。',
       },
       {
@@ -755,6 +791,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '19', description: '函数组合' }],
         codeHints: ['fn double(x: i32) -> i32 { x * 2 }', 'fn triple(x: i32) -> i32 { x * 3 }'],
         solution: '19',
+        solutionCode: '// 第四关：函数调用函数\n// 关键点：函数之间可以互相调用，调用结果可以参与运算。\n\nfn double(x: i32) -> i32 {\n    x * 2\n}\n\nfn triple(x: i32) -> i32 {\n    x * 3\n}\n\nfn main() {\n    // double(5) = 10, triple(3) = 9, 相加得到 19\n    let result = double(5) + triple(3);\n    println!("{}", result);\n}\n',
         explanation: '函数可以互相调用，构建更复杂的逻辑。',
       },
       {
@@ -768,6 +805,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Hello, Hacker!', description: '格式化函数' }],
         codeHints: ['fn greet(name: &str) -> String { format!("Hello, {}!", name) }'],
         solution: 'Hello, Hacker!',
+        solutionCode: '// 第五关：字符串参数\n// 关键点：&str 是字符串切片（借用，不拿走所有权），String 是拥有所有权的字符串。\n// format! 会按模板拼出一个新的 String 并返回。\n\nfn greet(name: &str) -> String {\n    format!("Hello, {}!", name)\n}\n\nfn main() {\n    println!("{}", greet("Hacker"));\n}\n',
         explanation: '&str 是字符串切片类型，format! 返回 String。',
       },
       {
@@ -781,6 +819,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '3', description: '安全除法' }],
         codeHints: ['if b == 0 { return 0; } a / b'],
         solution: '3',
+        solutionCode: '// 第六关：提前返回\n// 关键点：return 可以在函数中间直接结束函数并交出返回值，\n// 常用于处理特殊情况（比如除数为 0）。\n\nfn safe_divide(a: i32, b: i32) -> i32 {\n    if b == 0 {\n        return 0; // 除数为 0 时提前返回 0\n    }\n    a / b // 正常情况：整数除法，10 / 3 = 3\n}\n\nfn main() {\n    println!("{}", safe_divide(10, 3));\n}\n',
         explanation: 'return 提前返回，避免除以零错误。',
       },
       {
@@ -794,6 +833,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Damage: 25', description: '伤害计算' }],
         codeHints: ['fn calc_damage(base: i32, multiplier: f64) -> i32 { (base as f64 * multiplier) as i32 }'],
         solution: 'Damage: 25',
+        solutionCode: '// 第七关：综合练习\n// 关键点：i32 和 f64 不能直接相乘，必须用 as 显式转换类型。\n// 先 (base as f64) 转成小数，乘完再 as i32 转回整数（会直接截断小数部分）。\n\nfn calc_damage(base: i32, multiplier: f64) -> i32 {\n    (base as f64 * multiplier) as i32\n}\n\nfn main() {\n    println!("Damage: {}", calc_damage(10, 2.5));\n}\n',
         explanation: 'as 做类型转换，i32 和 f64 之间需要显式转换。',
       },
       {
@@ -807,6 +847,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Max: 30', description: '找最大值' }],
         codeHints: ['fn max(a: i32, b: i32) -> i32 { if a > b { a } else { b } }', 'let m = max(max(a, b), c);'],
         solution: 'Max: 30',
+        solutionCode: '// 第八关：函数组合\n// 关键点：把 max 反复嵌套调用，就能求多个数里的最大值。\n// max(10, 30) = 30，再 max(30, 20) = 30。\n\nfn max(a: i32, b: i32) -> i32 {\n    if a > b {\n        a\n    } else {\n        b\n    }\n}\n\nfn main() {\n    let a = 10;\n    let b = 30;\n    let c = 20;\n    // 先用 max 比较 a 和 b，再和 c 比较\n    println!("Max: {}", max(max(a, b), c));\n}\n',
         explanation: '函数可以嵌套调用，构建更复杂的逻辑。',
       },
     ],
@@ -860,6 +901,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'hello', description: '所有权移动' }],
         codeHints: ['let s2 = s1; — 移动后 s1 不能再用', 'println!("{}", s2);'],
         solution: 'hello',
+        solutionCode: '// 所有权移动：把 s1 赋给 s2 时，String 的所有权会"移动"给 s2，\n// s1 随即失效（不能再使用），这是 Rust 保证内存安全的核心规则。\nfn main() {\n    let s1 = String::from("hello");\n    // 移动所有权给 s2：只是拷贝了栈上的指针/长度/容量，堆数据不变\n    let s2 = s1;\n    // 输出 s2（s1 已失效，使用它会编译报错）\n    println!("{}", s2);\n}\n',
         explanation: 'String 赋值移动所有权，原变量失效。',
       },
       {
@@ -873,6 +915,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 's1: data, s2: data', description: '克隆' }],
         codeHints: ['let s2 = s1.clone(); — 深拷贝', 'println!("s1: {}, s2: {}", s1, s2);'],
         solution: 's1: data, s2: data',
+        solutionCode: '// 克隆：.clone() 会深拷贝堆上的数据，得到两个独立的 String，\n// s1 与 s2 都可以继续使用（代价是一次内存分配与复制）。\nfn main() {\n    let s1 = String::from("data");\n    // 克隆：s1 仍然拥有原来的数据\n    let s2 = s1.clone();\n    // 输出\n    println!("s1: {}, s2: {}", s1, s2);\n}\n',
         explanation: 'clone() 创建深拷贝，两个变量独立。',
       },
       {
@@ -886,6 +929,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'x: 42, y: 42', description: 'Copy 类型' }],
         codeHints: ['println!("x: {}, y: {}", x, y); — i32 自动复制'],
         solution: 'x: 42, y: 42',
+        solutionCode: '// Copy 类型：i32 这类只存在栈上、大小固定的类型实现了 Copy trait，\n// 赋值时是"按位复制"而不是移动，所以 x 和 y 都有效。\nfn main() {\n    let x = 42;\n    let y = x;\n    // i32 是 Copy 类型，两个都能用\n    println!("x: {}, y: {}", x, y);\n}\n',
         explanation: 'i32 实现了 Copy trait，赋值时自动复制。',
       },
       {
@@ -899,6 +943,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'owned!', description: '函数所有权' }],
         codeHints: ['fn print_string(s: String) { println!("{}", s); }'],
         solution: 'owned!',
+        solutionCode: '// 函数与所有权：把 String 作为参数传入函数时，所有权会移动进函数，\n// 调用方不再拥有它，无法再使用。\nfn print_string(s: String) {\n    // s 在这里拥有所有权，函数结束时它会被自动 drop 释放\n    println!("{}", s);\n}\n\nfn main() {\n    let msg = String::from("owned!");\n    print_string(msg);\n    // msg 的所有权已转移，不能再用\n}\n',
         explanation: 'String 传入函数后，所有权转移给函数参数。',
       },
       {
@@ -912,6 +957,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Hello, Rust!', description: '返回所有权' }],
         codeHints: ['fn create_greeting(name: &str) -> String { format!("Hello, {}!", name) }'],
         solution: 'Hello, Rust!',
+        solutionCode: '// 返回所有权：函数把新建的 String 作为返回值交还给调用者，\n// 所有权从函数内部"移动"到 main 里。\nfn create_greeting(name: &str) -> String {\n    // &str 是借用的字符串切片，format! 会分配一个新的 String 并返回它\n    format!("Hello, {}!", name)\n}\n\nfn main() {\n    let greeting = create_greeting("Rust");\n    println!("{}", greeting);\n}\n',
         explanation: '函数返回 String 时，所有权转移给调用者。',
       },
       {
@@ -925,6 +971,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 's2: original, s3: original', description: '所有权管理' }],
         codeHints: ['let s2 = s1; 然后 let s3 = s2.clone();', 'println!("s2: {}, s3: {}", s2, s3);'],
         solution: 's2: original, s3: original',
+        solutionCode: '// 所有权综合：移动后原变量失效，克隆则得到独立副本。\nfn main() {\n    let s1 = String::from("original");\n    // 移动给 s2：s1 失效\n    let s2 = s1;\n    // 克隆 s2 给 s3：s2 依然可用\n    let s3 = s2.clone();\n    // 输出 s2 和 s3\n    println!("s2: {}, s3: {}", s2, s3);\n}\n',
         explanation: '移动转移所有权，克隆创建独立副本。',
       },
       {
@@ -938,6 +985,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'repeat\nrepeat\nstill: repeat', description: '引用传参' }],
         codeHints: ['fn print_twice(s: &str) { println!("{}", s); println!("{}", s); }', '&s 传引用，不转移所有权'],
         solution: 'repeat\nrepeat\nstill: repeat',
+        solutionCode: '// 借用：传 &str 引用不会移动所有权，函数只是"借用"数据，\n// 调用结束后原变量依然有效。\nfn print_twice(s: &str) {\n    // 借用期间不能修改数据，但可以随意读取\n    println!("{}", s);\n    println!("{}", s);\n}\n\nfn main() {\n    let s = String::from("repeat");\n    print_twice(&s);\n    // s 还能用\n    println!("still: {}", s);\n}\n',
         explanation: '&str 引用不获取所有权，原变量还能用。',
       },
       {
@@ -951,6 +999,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Hello, Alice!\nLength: 5', description: '所有权实战' }],
         codeHints: ['println!("Length: {}", name.len());'],
         solution: 'Hello, Alice!\nLength: 5',
+        solutionCode: '// 所有权实战：借用让函数只读取数据，主调方仍保留所有权，\n// 因此后面还能调用 name.len()。\nfn greet(name: &str) {\n    println!("Hello, {}!", name);\n}\n\nfn main() {\n    let name = String::from("Alice");\n    greet(&name);\n    // name 还能用：len() 返回字节长度\n    println!("Length: {}", name.len());\n}\n',
         explanation: '引用让函数借用数据而不获取所有权。',
       },
     ],
@@ -1008,6 +1057,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'hello (len: 5)', description: '引用读取' }],
         codeHints: ['println!("{} (len: {})", r, r.len());'],
         solution: 'hello (len: 5)',
+        solutionCode: 'fn main() {\n    let s = String::from("hello");\n    // r 是 s 的不可变引用（借用），不会夺取所有权\n    let r = &s;\n    // 通过引用读取值，并调用 len() 得到字节长度\n    println!("{} (len: {})", r, r.len());\n}\n',
         explanation: '& 创建不可变引用，可以读取但不能修改。',
       },
       {
@@ -1021,6 +1071,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Hello, world!', description: '可变引用' }],
         codeHints: ['s.push_str(", world!"); — 直接修改也行', '或者 let r = &mut s; r.push_str(", world!");'],
         solution: 'Hello, world!',
+        solutionCode: 'fn main() {\n    let mut s = String::from("Hello");\n    // 可变引用 &mut s 允许通过引用修改原字符串\n    let r = &mut s;\n    r.push_str(", world!");\n    // 引用 r 用完后再使用 s 本身\n    println!("{}", s);\n}\n',
         explanation: '&mut 创建可变引用，允许修改借用的值。',
       },
       {
@@ -1034,6 +1085,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'len: 5\nstill: hello', description: '引用传参' }],
         codeHints: ['fn get_length(s: &str) -> usize { s.len() }'],
         solution: 'len: 5\nstill: hello',
+        solutionCode: '// 参数是 &str（字符串切片引用），调用者保留所有权\nfn get_length(s: &str) -> usize {\n    s.len()\n}\n\nfn main() {\n    let s = String::from("hello");\n    // 传入 &s：只是借用，函数返回后 s 依然可用\n    let len = get_length(&s);\n    println!("len: {}", len);\n    println!("still: {}", s);\n}\n',
         explanation: '引用不获取所有权，原变量还能用。',
       },
       {
@@ -1047,6 +1099,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Hello World', description: '可变引用修改' }],
         codeHints: ['fn add_world(s: &mut String) { s.push_str(" World"); }'],
         solution: 'Hello World',
+        solutionCode: '// 可变引用参数：函数可以在不取得所有权的前提下修改字符串\nfn add_world(s: &mut String) {\n    s.push_str(" World");\n}\n\nfn main() {\n    let mut s = String::from("Hello");\n    // 传入 &mut s 借出可变引用\n    add_world(&mut s);\n    println!("{}", s);\n}\n',
         explanation: '&mut 参数让函数能修改外部数据。',
       },
       {
@@ -1060,6 +1113,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Length: 5\nAfter: Hello!', description: '借用计算' }],
         codeHints: ['fn calculate_length(s: &String) -> usize { s.len() }'],
         solution: 'Length: 5\nAfter: Hello!',
+        solutionCode: '// 借用 &String 计算长度，不消费原变量\nfn calculate_length(s: &String) -> usize {\n    s.len()\n}\n\nfn main() {\n    let mut s = String::from("Hello");\n    let len = calculate_length(&s);\n    println!("Length: {}", len);\n    // 借用已结束，因此这里可以可变地修改 s\n    s.push_str("!");\n    println!("After: {}", s);\n}\n',
         explanation: '引用借用数据，不获取所有权，原变量还能修改。',
       },
       {
@@ -1073,6 +1127,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'hello\nhello world', description: '引用作用域' }],
         codeHints: ['代码已写好，直接运行验证'],
         solution: 'hello\nhello world',
+        solutionCode: 'fn main() {\n    let mut s = String::from("hello");\n    let r = &s;\n    println!("{}", r);\n    // r 最后一次使用在上面，NLL 之后借用结束，可以修改 s\n    s.push_str(" world");\n    println!("{}", s);\n}\n',
         explanation: '引用在最后一次使用后结束，之后原变量可以修改。',
       },
       {
@@ -1086,6 +1141,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'r1: data, r2: data', description: '多个引用' }],
         codeHints: ['println!("r1: {}, r2: {}", r1, r2);'],
         solution: 'r1: data, r2: data',
+        solutionCode: 'fn main() {\n    let s = String::from("data");\n    // 同时存在多个不可变引用是允许的（共享借用）\n    let r1 = &s;\n    let r2 = &s;\n    println!("r1: {}, r2: {}", r1, r2);\n}\n',
         explanation: '多个不可变引用可以同时存在。',
       },
       {
@@ -1099,6 +1155,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Hi, Rust!\nRust!!!', description: '引用实战' }],
         codeHints: ['fn greet(s: &str) { println!("Hi, {}!", s); }', 'fn append(s: &mut String) { s.push_str("!!!"); }'],
         solution: 'Hi, Rust!\nRust!!!',
+        solutionCode: '// 只读借用，打印问候语\nfn greet(s: &str) {\n    println!("Hi, {}!", s);\n}\n\n// 可变借用，在字符串末尾追加内容\nfn append(s: &mut String) {\n    s.push_str("!!!");\n}\n\nfn main() {\n    let mut name = String::from("Rust");\n    greet(&name);          // 不可变借用，用完即还\n    append(&mut name);     // 可变借用\n    println!("{}", name);\n}\n',
         explanation: '不可变引用读取，可变引用修改。',
       },
     ],
@@ -1160,6 +1217,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'First: hello', description: '字符串切片' }],
         codeHints: ['println!("First: {}", first);'],
         solution: 'First: hello',
+        solutionCode: '// 字符串切片：&s[0..5] 借用 s 的一部分，不复制数据\nfn main() {\n    let s = String::from("hello world");\n    // 取前 5 个字符的切片（左闭右开区间）\n    let first = &s[0..5];\n    // 切片可以直接用 {} 输出\n    println!("First: {}", first);\n}\n',
         explanation: '&s[0..5] 获取索引 0 到 4 的切片。',
       },
       {
@@ -1173,6 +1231,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'hello', description: '第一个单词' }],
         codeHints: ['遍历字节找空格：for (i, &item) in s.as_bytes().iter().enumerate()', '找到空格返回 &s[0..i]，没找到返回 &s[..]'],
         solution: 'hello',
+        solutionCode: '// 返回切片：生命周期跟随输入，s 不被复制\nfn first_word(s: &str) -> &str {\n    // as_bytes() 拿到字节视图，方便按下标扫描\n    let bytes = s.as_bytes();\n    for (i, &b) in bytes.iter().enumerate() {\n        if b == b\' \' {\n            // 遇到第一个空格，返回它之前的切片\n            return &s[0..i];\n        }\n    }\n    // 没有空格：整个字符串就是唯一的单词\n    &s[..]\n}\n\nfn main() {\n    let s = String::from("hello world");\n    println!("{}", first_word(&s));\n}\n',
         explanation: '切片是对字符串部分数据的引用。',
       },
       {
@@ -1186,6 +1245,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Slice: [20, 30, 40]', description: '数组切片' }],
         codeHints: ['println!("Slice: {:?}", slice); — {:?} 打印数组'],
         solution: 'Slice: [20, 30, 40]',
+        solutionCode: '// 数组切片：&arr[1..4] 借用数组的一段，长度在编译期就确定\nfn main() {\n    let arr = [10, 20, 30, 40, 50];\n    // 取下标 1、2、3 三个元素\n    let slice = &arr[1..4];\n    // 切片用 {:?} 调试格式输出\n    println!("Slice: {:?}", slice);\n}\n',
         explanation: '&arr[1..4] 获取索引 1 到 3 的元素。',
       },
       {
@@ -1199,6 +1259,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Hello, world!\nHello, Rust!', description: '切片参数' }],
         codeHints: ['fn greet(name: &str) { println!("Hello, {}!", name); }'],
         solution: 'Hello, world!\nHello, Rust!',
+        solutionCode: '// 用 &str 作参数：既能接收字符串字面量，也能接收 &String（自动解引用）\nfn greet(name: &str) {\n    println!("Hello, {}!", name);\n}\n\nfn main() {\n    let s1 = "world";            // &\'static str\n    let s2 = String::from("Rust"); // String\n    greet(s1);   // 直接传字面量\n    greet(&s2);  // 传 &String，自动强转成 &str\n}\n',
         explanation: '&str 参数同时接受 &str 和 &String。',
       },
       {
@@ -1212,6 +1273,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Year: 2024, Month: 06', description: '字符串解析' }],
         codeHints: ['println!("Year: {}, Month: {}", year, month);'],
         solution: 'Year: 2024, Month: 06',
+        solutionCode: '// 切片实战：按固定位置切出年、月\nfn main() {\n    let s = String::from("2024-06-18");\n    let year = &s[0..4];   // "2024"\n    let month = &s[5..7];  // "06"，跳过分隔符 \'-\'\n    println!("Year: {}, Month: {}", year, month);\n}\n',
         explanation: '切片常用于解析固定格式的字符串。',
       },
       {
@@ -1225,6 +1287,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'world', description: '最后一个单词' }],
         codeHints: ['if let Some(pos) = s.rfind(\' \') { &s[pos+1..] } else { s }'],
         solution: 'world',
+        solutionCode: '// 取最后一个单词：用 rfind 从右往左找空格\nfn last_word(s: &str) -> &str {\n    match s.rfind(\' \') {\n        // 找到空格，返回它之后的部分\n        Some(idx) => &s[idx + 1..],\n        // 没有空格，整串就是最后一个单词\n        None => s,\n    }\n}\n\nfn main() {\n    let s = String::from("hello world");\n    println!("{}", last_word(&s));\n}\n',
         explanation: 'rfind 查找最后一个匹配位置。',
       },
     ],
@@ -1278,6 +1341,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Alice has 100 HP', description: 'struct 基础' }],
         codeHints: ['struct Player { name: String, hp: i32 }', 'let p = Player { name: String::from("Alice"), hp: 100 };', 'println!("{} has {} HP", p.name, p.hp);'],
         solution: 'Alice has 100 HP',
+        solutionCode: '// w09-l01 定义 struct\n//\n// 【关键点】struct 把相关数据打包成一个自定义类型，类似其他语言的"类"，\n// 但 Rust 的 struct 只存数据，行为要另外写在 impl 块里（见下一关）。\n//\n// 定义 struct = 声明"这种数据长什么样"：字段名 + 字段类型。\n// 注意结构体定义末尾没有分号（和 C 不一样）。\n\nstruct Player {\n    name: String,\n    hp: i32,\n}\n\nfn main() {\n    // 【创建实例】用 `类型名 { 字段: 值, ... }` 的语法。\n    // 结构体没有构造函数概念，所有字段都必须写全（除非用 ..Default::default() 简写）。\n    let player = Player {\n        name: String::from("Alice"),\n        hp: 100,\n    };\n\n    // 【访问字段】用点号 `.`。字段有名字，所以比元组更易读、不怕写错顺序。\n    //   这里 player.name 是 String，player.hp 是 i32。\n    println!("{} has {} HP", player.name, player.hp);\n\n    // 【想改字段怎么办？】需要让变量可变：\n    //   let mut p = Player { ... };\n    //   p.hp = 80;\n}\n',
         explanation: 'struct 定义用花括号包围字段，用点号访问字段。',
       },
       {
@@ -1291,6 +1355,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Area: 50', description: 'struct 方法' }],
         codeHints: ['impl Rectangle { fn area(&self) -> f64 { self.width * self.height } }'],
         solution: 'Area: 50',
+        solutionCode: '// w09-l02 struct 方法\n//\n// 【关键点】impl 块给 struct 挂上方法。方法的第一个参数是 self 的某种形式，\n// 调用时用点号：rect.area()。这就是 Rust 的"面向对象"写法。\n//\n// self 的三种形式：\n//   &self     → 只读借用，不拿走所有权（最常用）\n//   &mut self → 可变借用，能改字段\n//   self      → 直接拿走所有权（消耗实例，调用后原变量不能再用了）\n//\n// 注意：面积算出来是 50，但类型是 f64；f64 的 Display 打印整数时\n// 就是 "50"（不带小数点），所以输出正好是 "Area: 50"。\n\nstruct Rectangle {\n    width: f64,\n    height: f64,\n}\n\nimpl Rectangle {\n    // &self 表示"只读借用"这个实例。返回 f64。\n    fn area(&self) -> f64 {\n        // 在方法内部通过 self.字段名 访问字段。\n        self.width * self.height\n    }\n}\n\nfn main() {\n    let rect = Rectangle {\n        width: 10.0,\n        height: 5.0,\n    };\n    println!("Area: {}", rect.area()); // 10.0 * 5.0 = 50\n}\n',
         explanation: 'impl 块为 struct 定义方法，&self 借用自身。',
       },
       {
@@ -1304,6 +1369,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Area: 50', description: 'new 函数' }],
         codeHints: ['impl Rectangle { fn new(w: f64, h: f64) -> Self { Rectangle { width: w, height: h } } }'],
         solution: 'Area: 50',
+        solutionCode: '// w09-l03 关联函数 new\n//\n// 【关键点】不接收 self 参数的函数叫"关联函数"，用 `类型名::函数名(...)` 调用，\n// 也就是双冒号 ::。new 是社区惯例的构造函数名（不是语言关键字）。\n//\n// 区分：\n//   Self  → 指代当前类型本身（这里是 Rectangle）\n//   self  → 指代当前实例\n//\n// 【字段简写】当形参名和字段名相同时，可以写 `Self { width: w, height: h }`，\n// 如果完全同名还能进一步简写成 `Self { width, height }`（见 w09-l06）。\n\nstruct Rectangle {\n    width: f64,\n    height: f64,\n}\n\nimpl Rectangle {\n    // 没有 self 参数 → 关联函数；返回 Self（等价于 Rectangle）。\n    fn new(w: f64, h: f64) -> Self {\n        Self {\n            width: w,\n            height: h,\n        }\n    }\n\n    // 普通方法：&self 只读借用。\n    fn area(&self) -> f64 {\n        self.width * self.height\n    }\n}\n\nfn main() {\n    // 用 :: 调用关联函数拿到实例，再用 . 调用方法。\n    let rect = Rectangle::new(10.0, 5.0);\n    println!("Area: {}", rect.area());\n}\n',
         explanation: '关联函数用 :: 调用，Self 指代当前类型。',
       },
       {
@@ -1317,6 +1383,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Point { x: 3, y: 7 }', description: 'Debug 打印' }],
         codeHints: ['#[derive(Debug)] 加在 struct 上面', 'println!("{:?}", p);'],
         solution: 'Point { x: 3, y: 7 }',
+        solutionCode: '// w09-l04 Debug 打印\n//\n// 【关键点】#[derive(Debug)] 是一个 derive 宏，让编译器自动为 struct\n// 生成 Debug trait 的实现，之后就能用 {:?} 打印这个结构体。\n//\n//   {:?}  → 调试格式：Point { x: 3, y: 7 }（字段名和值一一列出）\n//   {:#?} → 美化格式，多行缩进，适合嵌套很深的复杂数据\n//\n// 【为什么不能用 {} 打印？】{} 需要 Display trait，struct 默认没有实现它，\n// 因为"给人看的格式"没有唯一正确答案，必须你自己手写 impl Display。\n// 而 Debug 的格式是有标准答案的，所以可以自动派生。\n//\n// 其他常用 derive：Clone（克隆）、PartialEq（比较相等）、Copy（复制）、\n// Default（默认值）。它们大多也可以配合 #[derive(...)] 一起写。\n\n#[derive(Debug)]\nstruct Point {\n    x: i32,\n    y: i32,\n}\n\nfn main() {\n    let p = Point { x: 3, y: 7 };\n\n    // {:?} 打印出来的格式是：类型名 { 字段: 值, 字段: 值 }\n    // 注意大括号两侧各有一个空格，这是 Debug 的固定格式。\n    println!("{:?}", p);\n\n    // 取消下面这行注释可以看美化输出：\n    // println!("{:#?}", p);\n}\n',
         explanation: '#[derive(Debug)] 自动实现 Debug trait。',
       },
       {
@@ -1330,6 +1397,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Count: 3', description: '方法调用' }],
         codeHints: ['impl Counter { fn increment(&mut self) { self.value += 1; } fn get(&self) -> i32 { self.value } }'],
         solution: 'Count: 3',
+        solutionCode: '// w09-l05 方法（可变方法）\n//\n// 【关键点】要修改字段，方法第一个参数必须写成 &mut self（可变借用），\n// 同时调用它的变量也必须是 mut 声明的。\n//\n//   fn increment(&mut self)   ← 会改自己\n//   fn get(&self) -> i32      ← 只读，返回值\n//\n// Rust 借用规则：同一时刻要么有多个 &self（共享），要么只有一个 &mut self\n// （独占）。所以下面连续三次 c.increment() 是顺序执行的，每次借用都立刻结束，\n// 不会冲突。\n\nstruct Counter {\n    value: i32,\n}\n\nimpl Counter {\n    // &mut self：可变借用自己的 value 字段并自增。\n    fn increment(&mut self) {\n        self.value += 1; // 等价于 self.value = self.value + 1\n    }\n\n    // &self：只读借用，把当前值返回出去。\n    fn get(&self) -> i32 {\n        self.value\n    }\n}\n\nfn main() {\n    // 变量必须是 mut，否则无法调用 &mut self 方法。\n    let mut c = Counter { value: 0 };\n    c.increment();\n    c.increment();\n    c.increment();\n    println!("Count: {}", c.get()); // 0 + 1 + 1 + 1 = 3\n}\n',
         explanation: '&mut self 修改自身，&self 只读。',
       },
       {
@@ -1343,6 +1411,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Alice (HP: 100, ATK: 25)', description: 'struct 综合' }],
         codeHints: ['fn describe(&self) { println!("{} (HP: {}, ATK: {})", self.name, self.hp, self.attack); }'],
         solution: 'Alice (HP: 100, ATK: 25)',
+        solutionCode: '// w09-l06 struct 综合\n//\n// 【关键点】把 new 构造器 + describe 方法组合起来，这是 Rust 里最常见\n// 的一种数据抽象写法：struct 定义数据，impl 定义行为。\n//\n// name 用 String（堆上、有所有权的字符串）而不是 &str，所以能安全地\n// 把名字存进结构体里长期持有。new 接收 String 参数并把它"移动"进结构体。\n//\n// 【字段简写语法】fn new(name: String, hp: i32, attack: i32) -> Self {\n//     Self { name, hp, attack }    ← 变量名 = 字段名时可以省略 ": 变量名"\n// }\n\nstruct Character {\n    name: String,\n    hp: i32,\n    attack: i32,\n}\n\nimpl Character {\n    // 关联函数 new：封装创建逻辑，外界不用关心字段顺序。\n    fn new(name: String, hp: i32, attack: i32) -> Self {\n        Self { name, hp, attack } // 字段简写\n    }\n\n    // describe 只打印、不返回任何东西。\n    // 没有写返回类型就相当于 -> ()，也就是"什么都不返回"。\n    // &self 只读借用，所以调用完之后 hero 依然可用。\n    fn describe(&self) {\n        println!("{} (HP: {}, ATK: {})", self.name, self.hp, self.attack);\n    }\n}\n\nfn main() {\n    // String::from("Alice") 把 &str 转成 String。\n    let hero = Character::new(String::from("Alice"), 100, 25);\n    hero.describe();\n}\n',
         explanation: 'struct + impl + 方法是 Rust 的基本数据抽象。',
       },
       {
@@ -1356,6 +1425,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Red: 255, Green: 0, Blue: 0', description: '元组 struct' }],
         codeHints: ['struct Color(u8, u8, u8);', 'println!("Red: {}, Green: {}, Blue: {}", red.0, red.1, red.2);'],
         solution: 'Red: 255, Green: 0, Blue: 0',
+        solutionCode: '// w09-l07 元组 struct\n//\n// 【关键点】元组 struct 有类型名，但字段没有名字，只有位置。\n// 用 .0 .1 .2 按索引访问（不是 [0]，方括号是数组的语法）。\n//\n//   struct Color(u8, u8, u8);   ← 定义，注意末尾有分号\n//   let red = Color(255, 0, 0); ← 构造，像调用函数一样用圆括号\n//   red.0                        ← 访问第一个字段\n//\n// 【什么时候用？】字段名不重要、或者只是想把某个类型包一层以增加类型安全\n// （叫 newtype 模式），例如 struct Meters(f64) 和 struct Feet(f64) 不会写混。\n//\n// 【和普通 struct 的区别】普通 struct 用 {} 且字段有名字；元组 struct 用 ()\n// 且只有位置。元组 struct 也需要末尾分号，普通 struct 不需要。\n\nstruct Color(u8, u8, u8);\n\nfn main() {\n    // u8 的范围是 0..=255，正好装下一个颜色通道。\n    let red = Color(255, 0, 0);\n    println!(\n        "Red: {}, Green: {}, Blue: {}",\n        red.0, red.1, red.2\n    );\n}\n',
         explanation: '元组 struct 用 .0 .1 .2 访问字段。',
       },
       {
@@ -1369,6 +1439,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Goblin: 30 HP remaining', description: 'struct 实战' }],
         codeHints: ['fn take_damage(&mut self, dmg: i32) { self.hp -= dmg; }'],
         solution: 'Goblin: 30 HP remaining',
+        solutionCode: '// w09-l08 struct 实战\n//\n// 【关键点】用 &mut self 方法修改 struct 的内部状态，这是游戏里最常见的\n// 模式：数据（hp）和方法（take_damage）都封装在同一个类型里。\n//\n//   fn take_damage(&mut self, dmg: i32) {\n//       self.hp -= dmg;\n//   }\n//\n// 这里额外做了一次"血量不为负"的保护。真实游戏里通常还会判断\n// self.hp == 0 时标记敌人死亡（可以用 #[derive(PartialEq)] + 比较，或加一个\n// is_dead(&self) -> bool 方法）。\n\nstruct Enemy {\n    name: String,\n    hp: i32,\n}\n\nimpl Enemy {\n    // &mut self：可变借用，所以能改 self.hp。\n    fn take_damage(&mut self, dmg: i32) {\n        self.hp -= dmg; // 50 - 20 = 30\n\n        // 简单保护：血量不会变成负数。\n        if self.hp < 0 {\n            self.hp = 0;\n        }\n    }\n}\n\nfn main() {\n    // 因为要调用 &mut self 方法，所以必须是 mut。\n    let mut enemy = Enemy {\n        name: String::from("Goblin"),\n        hp: 50,\n    };\n\n    enemy.take_damage(20);\n    println!("{}: {} HP remaining", enemy.name, enemy.hp);\n}\n',
         explanation: '&mut self 方法可以修改 struct 内部状态。',
       },
     ],
@@ -1422,6 +1493,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Going up', description: '枚举基础' }],
         codeHints: ['enum Direction { Up, Down, Left, Right }', 'match dir { Direction::Up => println!("Going up"), ... }'],
         solution: 'Going up',
+        solutionCode: '// 定义枚举：枚举把一组可能的取值放在同一个类型名下。\n#[derive(Debug)]\nenum Direction {\n    Up,\n    Down,\n    Left,\n    Right,\n}\n\nfn main() {\n    let dir = Direction::Up;\n    // match 必须穷尽所有分支，编译器会检查是否遗漏。\n    match dir {\n        Direction::Up => println!("Going up"),\n        Direction::Down => println!("Going down"),\n        Direction::Left => println!("Going left"),\n        Direction::Right => println!("Going right"),\n    }\n}\n',
         explanation: 'enum 定义变体，match 匹配处理。',
       },
       {
@@ -1435,6 +1507,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Message: hello', description: '枚举数据' }],
         codeHints: ['enum Message { Quit, Text(String) }', 'Message::Text(s) => println!("Message: {}", s)'],
         solution: 'Message: hello',
+        solutionCode: '// 带数据的枚举：每个变体可以携带不同类型/数量的数据，像可辨识联合。\nenum Message {\n    Quit,\n    Text(String),\n}\n\nfn main() {\n    let msg = Message::Text(String::from("hello"));\n    // match 时用模式把变体里的数据绑定到变量 name 上。\n    match msg {\n        Message::Quit => println!("Quit"),\n        Message::Text(name) => println!("Message: {}", name),\n    }\n}\n',
         explanation: '枚举变体可以携带不同类型的数据。',
       },
       {
@@ -1448,6 +1521,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '42', description: 'Option' }],
         codeHints: ['match x { Some(v) => println!("{}", v), None => println!("no value") }'],
         solution: '42',
+        solutionCode: '// Option<T> 是标准库枚举：Some(值) 或 None，用类型系统表示可能没有值。\nfn main() {\n    let x: Option<i32> = Some(42);\n    // match 分别处理 Some 和 None 两种情况，避免空指针问题。\n    match x {\n        Some(v) => println!("{}", v),\n        None => println!("no value"),\n    }\n}\n',
         explanation: 'Option 用 Some 和 None 表示有值或无值。',
       },
       {
@@ -1461,6 +1535,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Value: 10', description: 'if let' }],
         codeHints: ['if let Some(v) = x { println!("Value: {}", v); }'],
         solution: 'Value: 10',
+        solutionCode: '// if let 是只关心一个分支时的简写，等价于单分支的 match。\nfn main() {\n    let x: Option<i32> = Some(10);\n    if let Some(v) = x {\n        println!("Value: {}", v);\n    } else {\n        println!("no value");\n    }\n}\n',
         explanation: 'if let 只匹配一个模式，忽略其他情况。',
       },
       {
@@ -1474,6 +1549,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Red light: 60s', description: '枚举方法' }],
         codeHints: ['match self { TrafficLight::Red => 60, TrafficLight::Yellow => 10, TrafficLight::Green => 45 }'],
         solution: 'Red light: 60s',
+        solutionCode: '// 为枚举实现方法：impl 块里写 &self 方法，像给类型加成员函数。\nenum TrafficLight {\n    Red,\n    Yellow,\n    Green,\n}\n\nimpl TrafficLight {\n    fn duration(&self) -> i32 {\n        // match self 取出当前是哪个变体，返回对应时长。\n        match self {\n            TrafficLight::Red => 60,\n            TrafficLight::Yellow => 10,\n            TrafficLight::Green => 45,\n        }\n    }\n}\n\nfn main() {\n    let light = TrafficLight::Red;\n    println!("Red light: {}s", light.duration());\n}\n',
         explanation: 'impl 块可以为枚举定义方法。',
       },
       {
@@ -1487,6 +1563,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Result: 15', description: '枚举实战' }],
         codeHints: ['match self { Operation::Add(a, b) => a + b, Operation::Sub(a, b) => a - b, Operation::Mul(a, b) => a * b }'],
         solution: 'Result: 15',
+        solutionCode: '// 枚举实战：变体携带数据，方法内部解构这些数据进行计算。\nenum Operation {\n    Add(f64, f64),\n    Sub(f64, f64),\n    Mul(f64, f64),\n}\n\nimpl Operation {\n    fn calculate(&self) -> f64 {\n        match self {\n            Operation::Add(a, b) => a + b,\n            Operation::Sub(a, b) => a - b,\n            Operation::Mul(a, b) => a * b,\n        }\n    }\n}\n\nfn main() {\n    let op = Operation::Add(10.0, 5.0);\n    // f64 打印时 15.0 会显示为 15\n    println!("Result: {}", op.calculate());\n}\n',
         explanation: '枚举 + match 是 Rust 的核心模式。',
       },
     ],
@@ -1546,6 +1623,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Max: 5', description: '泛型函数' }],
         codeHints: ['fn largest<T: PartialOrd>(list: &[T]) -> &T { let mut max = &list[0]; for item in list { if item > max { max = item; } } max }'],
         solution: 'Max: 5',
+        solutionCode: '// 泛型函数：用 <T: PartialOrd> 让同一个函数服务所有可比较的类型\n// 返回 &T 而不是 T，避免移动或复制，也说明返回值引用的生命周期跟随入参切片\nfn largest<T: PartialOrd>(list: &[T]) -> &T {\n    let mut max = &list[0]; // 先假设第一个元素最大\n    for item in list.iter() {\n        if item > max {\n            max = item; // 发现更大就换掉记录\n        }\n    }\n    max\n}\n\nfn main() {\n    let nums = [1, 5, 3];\n    println!("Max: {}", largest(&nums));\n}\n',
         explanation: '<T> 声明类型参数，T: PartialOrd 约束可比较。',
       },
       {
@@ -1559,6 +1637,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Point(3, 7)', description: '泛型 struct' }],
         codeHints: ['struct Point<T> { x: T, y: T }', 'impl<T> Point<T> { fn new(x: T, y: T) -> Self { Point { x, y } } }'],
         solution: 'Point(3, 7)',
+        solutionCode: '// 泛型 struct：Point<T> 的两个字段类型相同，T 由使用者决定\nstruct Point<T> {\n    x: T,\n    y: T,\n}\n\nimpl<T> Point<T> {\n    // 关联函数 new，属于 impl<T> 块，不需要 self\n    fn new(x: T, y: T) -> Self {\n        Point { x, y }\n    }\n}\n\nfn main() {\n    let p = Point::new(3, 7); // T 被推断为 i32\n    println!("Point({}, {})", p.x, p.y);\n}\n',
         explanation: 'struct Point<T> 声明泛型 struct。',
       },
       {
@@ -1572,6 +1651,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Value: 42', description: '泛型方法' }],
         codeHints: ['impl<T> Wrapper<T> { fn get(&self) -> &T { &self.value } }'],
         solution: 'Value: 42',
+        solutionCode: '// 泛型方法：在 impl<T> 块中为 Wrapper<T> 添加方法\nstruct Wrapper<T> {\n    value: T,\n}\n\nimpl<T> Wrapper<T> {\n    // 返回 &T，借用而不是夺走所有权\n    fn get(&self) -> &T {\n        &self.value\n    }\n}\n\nfn main() {\n    let w = Wrapper { value: 42 };\n    println!("Value: {}", w.get());\n}\n',
         explanation: 'impl<T> 为泛型类型实现方法。',
       },
       {
@@ -1585,6 +1665,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '42 and hello', description: '多泛型' }],
         codeHints: ['struct Pair<A, B> { first: A, second: B }'],
         solution: '42 and hello',
+        solutionCode: '// 多个泛型参数：A 和 B 可以完全不同\nstruct Pair<A, B> {\n    first: A,\n    second: B,\n}\n\nfn main() {\n    let p = Pair { first: 42, second: "hello" }; // A = i32, B = &str\n    println!("{} and {}", p.first, p.second);\n}\n',
         explanation: '<A, B> 允许两个不同类型参数。',
       },
       {
@@ -1598,6 +1679,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '42\nhello', description: '泛型约束' }],
         codeHints: ['fn print_it<T: std::fmt::Display>(item: T) { println!("{}", item); }'],
         solution: '42\nhello',
+        solutionCode: '// 泛型约束：T: Display 要求 T 能被打上 {} 打印\n// 没有这个约束，编译器不允许在 println! 里用 {}\nfn print_it<T: std::fmt::Display>(item: T) {\n    println!("{}", item);\n}\n\nfn main() {\n    print_it(42);      // T = i32\n    print_it("hello"); // T = &str\n}\n',
         explanation: 'T: Display 约束 T 必须能用 {} 打印。',
       },
       {
@@ -1611,6 +1693,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Popped: 30', description: '泛型实战' }],
         codeHints: ['impl<T> Stack<T> { fn push(&mut self, item: T) { self.items.push(item); } fn pop(&mut self) -> T { self.items.pop().unwrap() } }'],
         solution: 'Popped: 30',
+        solutionCode: '// 泛型实战：用 Vec<T> 实现后进先出的栈\nstruct Stack<T> {\n    items: Vec<T>,\n}\n\nimpl<T> Stack<T> {\n    fn push(&mut self, item: T) {\n        self.items.push(item);\n    }\n\n    // 空栈时返回 None，这是 Rust 表达"可能没有值"的标准做法\n    fn pop(&mut self) -> Option<T> {\n        self.items.pop()\n    }\n}\n\nfn main() {\n    let mut s = Stack { items: vec![] };\n    s.push(10);\n    s.push(20);\n    s.push(30);\n    println!("Popped: {}", s.pop().unwrap()); // unwrap 取出 Some(30)\n}\n',
         explanation: '泛型 struct + 方法实现通用数据结构。',
       },
     ],
@@ -1667,6 +1750,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Hello, Alice!', description: 'trait 基础' }],
         codeHints: ['trait Greet { fn greet(&self) -> String; }', 'impl Greet for User { fn greet(&self) -> format!("Hello, {}!", self.name) }'],
         solution: 'Hello, Alice!',
+        solutionCode: '// 定义 trait：描述"具备某种能力"，任何类型都可以实现它\ntrait Greet {\n    // trait 方法签名，只声明不实现\n    fn greet(&self) -> String;\n}\n\n// 定义数据结构\nstruct User {\n    name: String,\n}\n\n// 用 impl Trait for Type 为具体类型实现 trait\nimpl Greet for User {\n    fn greet(&self) -> String {\n        // self 是 &User，可以读取字段\n        format!("Hello, {}!", self.name)\n    }\n}\n\nfn main() {\n    let user = User { name: String::from("Alice") };\n    // 调用 trait 方法，编译器会自动找到 impl\n    println!("{}", user.greet());\n}\n',
         explanation: 'trait 定义接口，impl for 实现接口。',
       },
       {
@@ -1680,6 +1764,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'User: Alice\nProduct: Widget ($9.99)', description: 'trait 参数' }],
         codeHints: ['impl Printable for User { fn format(&self) -> format!("User: {}", self.name) }'],
         solution: 'User: Alice\nProduct: Widget ($9.99)',
+        solutionCode: '// 定义 Printable trait：任何"可打印"的类型都实现它\ntrait Printable {\n    fn format(&self) -> String;\n}\n\nstruct User {\n    name: String,\n}\n\nstruct Product {\n    name: String,\n    price: f64,\n}\n\n// 同一个 trait 可以有多个实现，各自决定输出格式\nimpl Printable for User {\n    fn format(&self) -> String {\n        format!("User: {}", self.name)\n    }\n}\n\nimpl Printable for Product {\n    fn format(&self) -> String {\n        // f64 用 {} 打印 9.99 就是 "9.99"\n        format!("Product: {} (${})", self.name, self.price)\n    }\n}\n\n// impl Trait 作为参数：泛型 + trait 约束的语法糖，\n// 编译时会为每个具体类型分别生成一份代码（单态化）\nfn print_item(item: &impl Printable) {\n    println!("{}", item.format());\n}\n\nfn main() {\n    let user = User { name: String::from("Alice") };\n    let product = Product { name: String::from("Widget"), price: 9.99 };\n    print_item(&user);\n    print_item(&product);\n}\n',
         explanation: 'impl Trait 参数接受任何实现了该 trait 的类型。',
       },
       {
@@ -1693,6 +1778,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Article: Rust\nRead more...', description: '默认方法' }],
         codeHints: ['trait Summary { fn summarize(&self) -> String { String::from("Read more...") } }'],
         solution: 'Article: Rust\nRead more...',
+        solutionCode: '// trait 的默认方法：提供默认实现，类型可以选择覆盖或直接继承\ntrait Summary {\n    fn summarize(&self) -> String {\n        String::from("Read more...")\n    }\n}\n\nstruct Article {\n    title: String,\n}\n\n// 空标记结构体（无字段），注意带花括号\nstruct ShortPost {}\n\nimpl Summary for Article {\n    // 覆盖默认实现\n    fn summarize(&self) -> String {\n        format!("Article: {}", self.title)\n    }\n}\n\n// 只写 impl 块，不写方法 —— 自动使用默认实现\nimpl Summary for ShortPost {}\n\nfn main() {\n    let a = Article { title: String::from("Rust") };\n    let s = ShortPost {};\n    println!("{}", a.summarize());\n    println!("{}", s.summarize());\n}\n',
         explanation: 'trait 默认方法可以被覆盖或直接使用。',
       },
       {
@@ -1706,6 +1792,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Equal: true', description: 'derive' }],
         codeHints: ['#[derive(Debug, Clone, PartialEq)] 加在 struct 上面'],
         solution: 'Equal: true',
+        solutionCode: '// derive 让编译器自动生成 trait 实现：\n// Debug -> {:?} 打印；Clone -> .clone()；PartialEq -> == 比较\n#[derive(Debug, Clone, PartialEq)]\nstruct Point(i32, i32);\n\nfn main() {\n    let p1 = Point(1, 2);\n    // clone() 得到一份独立副本（这里字段是 i32，本身也可复制，但写法一致）\n    let p2 = p1.clone();\n    // PartialEq 生成的实现会逐字段比较，相等则返回 true\n    println!("Equal: {}", p1 == p2);\n}\n',
         explanation: '#[derive(...)] 自动实现常用 trait。',
       },
       {
@@ -1719,6 +1806,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Circle(r=5)\nSquare(s=3)', description: 'trait 对象' }],
         codeHints: ['dyn Drawable 是 trait 对象，允许存储不同类型'],
         solution: 'Circle(r=5)\nSquare(s=3)',
+        solutionCode: '// 面向接口编程：trait 定义行为，&dyn Trait 是 trait 对象（运行时动态分发）\ntrait Drawable {\n    fn draw(&self) -> String;\n}\n\nstruct Circle {\n    radius: f64,\n}\n\nstruct Square {\n    side: f64,\n}\n\nimpl Drawable for Circle {\n    fn draw(&self) -> String {\n        // 5.0 用 {} 打印为 "5"，不显示小数点\n        format!("Circle(r={})", self.radius)\n    }\n}\n\nimpl Drawable for Square {\n    fn draw(&self) -> String {\n        format!("Square(s={})", self.side)\n    }\n}\n\n// 接收 trait 对象切片：不同具体类型可以放进同一个容器，\n// 通过虚表(vtable)在运行时决定调用哪个 draw\nfn draw_all(items: &[&dyn Drawable]) {\n    for item in items {\n        println!("{}", item.draw());\n    }\n}\n\nfn main() {\n    let shapes: Vec<&dyn Drawable> = vec![\n        &Circle { radius: 5.0 },\n        &Square { side: 3.0 },\n    ];\n    draw_all(&shapes);\n}\n',
         explanation: 'trait 对象允许动态分发不同类型。',
       },
     ],
@@ -1785,6 +1873,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'world!', description: '生命周期' }],
         codeHints: ['if x.len() > y.len() { x } else { y }'],
         solution: 'world!',
+        solutionCode: '// 生命周期注解 \'a：向编译器承诺"返回的引用与两个入参中活得较短的那个同样有效"。\n// 这样 longest 返回的 &str 就不会悬垂。\nfn longest<\'a>(x: &\'a str, y: &\'a str) -> &\'a str {\n    // 两个参数和返回值共用同一个生命周期 \'a\n    if x.len() > y.len() {\n        x\n    } else {\n        y\n    }\n}\n\nfn main() {\n    // "world!" 比 "hello" 长，所以返回 "world!"（字符串字面量是 \'static）\n    let result = longest("hello", "world!");\n    println!("{}", result);\n}\n',
         explanation: '\'a 表示返回值的生命周期与参数相同。',
       },
       {
@@ -1798,6 +1887,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Excerpt: Hello', description: 'struct 生命周期' }],
         codeHints: ['struct Excerpt<\'a> { text: &\'a str }', 'impl<\'a> Excerpt<\'a> { fn new(text: &\'a str) -> Self { Excerpt { text } } }'],
         solution: 'Excerpt: Hello',
+        solutionCode: '// 只要 struct 里存了引用，就必须为它加上生命周期参数，\n// 表示"这个结构体不能比它借用的数据活得更久"。\nstruct Excerpt<\'a> {\n    text: &\'a str,\n}\n\n// impl 块也要带上同样的生命周期参数\nimpl<\'a> Excerpt<\'a> {\n    fn new(text: &\'a str) -> Self {\n        Excerpt { text }\n    }\n\n    // 方法签名里 &self 自带生命周期，省略规则让它返回 &self 里的引用\n    fn get_text(&self) -> &str {\n        self.text\n    }\n}\n\nfn main() {\n    let text = String::from("Hello");\n    let excerpt = Excerpt::new(&text); // excerpt 借用了 text\n    println!("Excerpt: {}", excerpt.get_text());\n}\n',
         explanation: 'struct 存储引用时，生命周期参数确保引用有效。',
       },
       {
@@ -1811,6 +1901,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'hello', description: '省略规则' }],
         codeHints: ['fn first_word(s: &str) -> &str — 编译器自动推断生命周期'],
         solution: 'hello',
+        solutionCode: '// 生命周期省略规则：只有一个输入引用时，返回值的生命周期自动等于它，\n// 所以这里不需要手写 <\'a>，编译器替我们推断。\nfn first_word(s: &str) -> &str {\n    // 找到第一个空格，返回它之前（或整个字符串）的切片\n    match s.find(\' \') {\n        Some(i) => &s[..i],\n        None => s,\n    }\n}\n\nfn main() {\n    let s = String::from("hello world");\n    // 返回的切片借用 s，s 在打印期间一直存活\n    println!("{}", first_word(&s));\n}\n',
         explanation: '只有一个输入引用时，编译器自动推断生命周期。',
       },
       {
@@ -1824,6 +1915,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Rust by Steve', description: '生命周期实战' }],
         codeHints: ['fn describe(&self) -> String { format!("{} by {}", self.title, self.author) }'],
         solution: 'Rust by Steve',
+        solutionCode: '// 结构体持有两个引用，用同一个生命周期 \'a 表示它们都要活得足够久\nstruct Book<\'a> {\n    title: &\'a str,\n    author: &\'a str,\n}\n\nimpl<\'a> Book<\'a> {\n    // 拼接成 "标题 by 作者"，这里构造新的 String，避免返回引用带来的生命周期纠缠\n    fn describe(&self) -> String {\n        format!("{} by {}", self.title, self.author)\n    }\n}\n\nfn main() {\n    let title = String::from("Rust");\n    let author = String::from("Steve");\n    let book = Book { title: &title, author: &author };\n    println!("{}", book.describe());\n}\n',
         explanation: '生命周期确保 struct 中的引用有效。',
       },
     ],
@@ -1880,6 +1972,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Ok: 42\nErr: invalid', description: 'Result 处理' }],
         codeHints: ['fn parse_number(s: &str) -> Result<i32, String> { s.parse::<i32>().map_err(|_| String::from("invalid")) }'],
         solution: 'Ok: 42\nErr: invalid',
+        solutionCode: '// 使用 Result 表示"可能失败"的计算\n// Result<T, E> 有两个变体：Ok(T) 表示成功，Err(E) 表示失败。\n\n// 返回 Result<i32, String>：成功时是数字，失败时是一段错误信息\nfn parse_number(s: &str) -> Result<i32, String> {\n    // parse 本身返回 Result，用 match 把结果转换成我们自己的错误类型\n    match s.parse::<i32>() {\n        Ok(n) => Ok(n),               // 解析成功，直接向上传递\n        Err(_) => Err("invalid".to_string()), // 解析失败，换成统一的错误信息\n    }\n}\n\nfn main() {\n    // 对 Ok 和 Err 两个分支分别处理\n    match parse_number("42") {\n        Ok(n) => println!("Ok: {}", n),\n        Err(e) => println!("Err: {}", e),\n    }\n    match parse_number("abc") {\n        Ok(n) => println!("Ok: {}", n),\n        Err(e) => println!("Err: {}", e),\n    }\n}\n',
         explanation: 'Result 用 Ok 表示成功，Err 表示失败。',
       },
       {
@@ -1893,6 +1986,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '42', description: '? 运算符' }],
         codeHints: ['fn parse_and_double(s: &str) -> Result<i32, String> { let n = s.parse::<i32>().map_err(|_| String::from("invalid"))?; Ok(n * 2) }'],
         solution: '42',
+        solutionCode: '// ? 运算符：遇到 Err 就提前返回，遇到 Ok 就取出里面的值继续往下走\n\n// parse 的错误是 ParseIntError，而函数签名要求 String 错误，\n// 所以用 map_err 把错误类型转换一下，再用 ? 传播。\nfn parse_and_double(s: &str) -> Result<i32, String> {\n    let n = s\n        .parse::<i32>()\n        .map_err(|e| e.to_string())?; // 失败：提前 return Err(...)\n    Ok(n * 2) // 成功：把 2 倍的结果包回 Ok\n}\n\nfn main() {\n    match parse_and_double("21") {\n        Ok(n) => println!("{}", n),\n        Err(e) => println!("Error: {}", e),\n    }\n}\n',
         explanation: '? 自动传播错误，成功时继续执行。',
       },
       {
@@ -1906,6 +2000,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Found: Alice\nNot found', description: '自定义错误' }],
         codeHints: ['enum AppError { NotFound, Invalid }', 'fn find_user(id: i32) -> Result<String, AppError> { if id == 1 { Ok(String::from("Alice")) } else { Err(AppError::NotFound) } }'],
         solution: 'Found: Alice\nNot found',
+        solutionCode: '// 自定义错误类型：让错误携带语义，调用者能区分失败原因\n\n// 用 enum 表示应用自己的错误种类\n#[derive(Debug)] // 实现 Debug，方便用 {:?} 打印或 unwrap/expect\n#[allow(dead_code)] // Invalid 在本例中未被构造，仅作为错误种类示例\nenum AppError {\n    NotFound, // 找不到用户\n    Invalid,  // 输入非法\n}\n\n// 返回 Result<String, AppError>：用我们自己的错误类型代替 String\nfn find_user(id: i32) -> Result<String, AppError> {\n    if id == 1 {\n        Ok("Alice".to_string())\n    } else {\n        Err(AppError::NotFound)\n    }\n}\n\nfn main() {\n    match find_user(1) {\n        Ok(name) => println!("Found: {}", name),\n        Err(_) => println!("Not found"),\n    }\n    match find_user(99) {\n        Ok(name) => println!("Found: {}", name),\n        Err(_) => println!("Not found"),\n    }\n}\n',
         explanation: 'enum 定义错误类型，Result 传播错误。',
       },
       {
@@ -1919,6 +2014,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '42', description: '错误链' }],
         codeHints: ['let n = s.parse::<i32>().map_err(|_| String::from("invalid"))?;', 'Ok(n * 2 + 10)'],
         solution: '42',
+        solutionCode: '// 错误链：多个可能失败的步骤串起来，任何一步失败都整体失败\n// 用 ? 让中间步骤的错误自动向上传播，主逻辑保持线性可读。\n\nfn process(s: &str) -> Result<i32, String> {\n    // 第一步：解析，失败就带着错误信息提前返回\n    let n: i32 = s.parse::<i32>().map_err(|e| e.to_string())?;\n    // 第二步：乘 2（不会失败，直接算）\n    let doubled = n * 2;\n    // 第三步：加 10，最后包成 Ok\n    Ok(doubled + 10)\n}\n\nfn main() {\n    match process("16") {\n        Ok(n) => println!("{}", n),\n        Err(e) => println!("Error: {}", e),\n    }\n}\n',
         explanation: '? 在链式调用中自动传播错误。',
       },
       {
@@ -1932,6 +2028,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Result: 3.3333333333333335\nError: division by zero', description: '错误处理实战' }],
         codeHints: ['fn divide(a: f64, b: f64) -> Result<f64, String> { if b == 0.0 { Err(String::from("division by zero")) } else { Ok(a / b) } }'],
         solution: 'Result: 3.3333333333333335\nError: division by zero',
+        solutionCode: '// 错误处理实战：把"业务规则校验"和"计算"放在一起\n// 除数为 0 是一种必须显式处理的失败情况（浮点除法不会 panic，但结果无意义）。\n\nfn divide(a: f64, b: f64) -> Result<f64, String> {\n    if b == 0.0 {\n        // 违反前置条件：返回 Err 而不是 panic，让调用者决定怎么办\n        Err("division by zero".to_string())\n    } else {\n        Ok(a / b) // 正常情况返回 Ok\n    }\n}\n\nfn main() {\n    match divide(10.0, 3.0) {\n        Ok(r) => println!("Result: {}", r),\n        Err(e) => println!("Error: {}", e),\n    }\n    match divide(10.0, 0.0) {\n        Ok(r) => println!("Result: {}", r),\n        Err(e) => println!("Error: {}", e),\n    }\n}\n',
         explanation: 'Result + match 是 Rust 错误处理的标准模式。',
       },
     ],
@@ -1994,6 +2091,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Sum: 15', description: '模块基础' }],
         codeHints: ['mod math { pub fn add(a: i32, b: i32) -> i32 { a + b } }'],
         solution: 'Sum: 15',
+        solutionCode: '// 模块实战 1：用 mod 定义模块，把相关函数组织在一起。\n// 模块内的项默认私有，必须加 pub 才能被外部访问。\nmod math {\n    // pub 让 add 可以被模块外部使用\n    pub fn add(a: i32, b: i32) -> i32 {\n        a + b // 最后一行不加分号，作为返回值\n    }\n}\n\n// use 把 math::add 引入当前作用域，之后就能直接写 add(...)\nuse math::add;\n\nfn main() {\n    // 调用引入的函数，输出 Sum: 15\n    println!("Sum: {}", add(10, 5));\n}\n',
         explanation: 'mod 定义模块，pub 公开函数，use 引入使用。',
       },
       {
@@ -2007,6 +2105,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Hello, Rust!\nValue: 42', description: '可见性' }],
         codeHints: ['pub fn greet(name: &str) { println!("Hello, {}!", name); }', 'pub fn get_value() -> i32 { internal() }'],
         solution: 'Hello, Rust!\nValue: 42',
+        solutionCode: '// 模块实战 2：可见性（pub）控制哪些项能被外部使用。\nmod utils {\n    // 私有函数：只有 utils 模块内部（含子模块）能调用它\n    fn internal() -> i32 {\n        42\n    }\n\n    // pub：公开给外部使用；它内部可以自由调用私有的 internal\n    pub fn greet(name: &str) {\n        println!("Hello, {}!", name);\n    }\n\n    // pub：对外暴露，内部再调用私有函数，这是常见的封装手法\n    pub fn get_value() -> i32 {\n        internal()\n    }\n}\n\n// 从 utils 中一次引入两个公开函数\nuse utils::{greet, get_value};\n\nfn main() {\n    greet("Rust"); // 输出 Hello, Rust!\n    println!("Value: {}", get_value()); // 输出 Value: 42\n}\n',
         explanation: 'pub 公开函数，私有函数只能在模块内调用。',
       },
       {
@@ -2020,6 +2119,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Circle: 78.53981633974483\nRect: 50', description: '模块实战' }],
         codeHints: ['mod shapes { pub fn circle_area(r: f64) -> f64 { std::f64::consts::PI * r * r } pub fn rect_area(w: f64, h: f64) -> f64 { w * h } }'],
         solution: 'Circle: 78.53981633974483\nRect: 50',
+        solutionCode: '// 模块实战 3：把几何计算封装进 shapes 模块，对外只暴露需要的函数。\nmod shapes {\n    // 使用标准库的 PI 常量，保证精度与 f64 最长表示一致\n    use std::f64::consts::PI;\n\n    // 圆的面积：π * r²\n    pub fn circle_area(r: f64) -> f64 {\n        PI * r * r\n    }\n\n    // 矩形面积：宽 * 高\n    pub fn rect_area(w: f64, h: f64) -> f64 {\n        w * h\n    }\n}\n\n// 引入两个公开函数\nuse shapes::{circle_area, rect_area};\n\nfn main() {\n    // 78.53981633974483\n    println!("Circle: {}", circle_area(5.0));\n    // 50\n    println!("Rect: {}", rect_area(10.0, 5.0));\n}\n',
         explanation: '模块组织代码，pub 控制可见性。',
       },
     ],
@@ -2075,6 +2175,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '', description: '测试通过' }],
         codeHints: ['fn add(a: i32, b: i32) -> i32 { a + b }', '#[cfg(test)] mod tests { use super::*; #[test] fn test1() { assert_eq!(add(2, 3), 5); } }'],
         solution: '',
+        solutionCode: '// w16-l01 编写测试\n//\n// 关键点：把测试放进 `#[cfg(test)] mod tests` 模块，这段代码只在\n// `rustc --test`（或 cargo test）时才被编译，发布版本里完全不存在。\n// `use super::*;` 把父模块里的 add 引入测试作用域。\n// 普通编译运行时 main 不打印任何东西；用 `rustc --edition 2021 --test` 跑测试。\n\n/// 返回两个 i32 的和。\nfn add(a: i32, b: i32) -> i32 {\n    a + b\n}\n\nfn main() {\n    // 这个关卡不要求任何输出；这里只是让程序可以独立编译运行。\n    let _ = add(1, 1);\n}\n\n#[cfg(test)]\nmod tests {\n    use super::*;\n\n    #[test]\n    fn test_add_positive() {\n        assert_eq!(add(2, 3), 5);\n    }\n\n    #[test]\n    fn test_add_negative() {\n        assert_eq!(add(-1, 1), 0);\n    }\n\n    #[test]\n    fn test_add_zero() {\n        assert_eq!(add(0, 0), 0);\n    }\n}\n',
         explanation: '#[test] 标记测试，assert_eq! 断言相等。',
       },
       {
@@ -2088,6 +2189,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '', description: '测试通过' }],
         codeHints: ['fn is_even(n: i32) -> bool { n % 2 == 0 }', '#[test] fn test_even() { assert!(is_even(2)); }'],
         solution: '',
+        solutionCode: '// w16-l02 测试实战\n//\n// 关键点：`n % 2 == 0` 判断偶数；Rust 的取余对负数也返回带符号的结果（-3 % 2 == -1），\n// 但比较的是"是否等于 0"，所以负数同样判断正确。\n// 三个 #[test] 覆盖真 / 假 / 零三种情况。\n\n/// 判断 n 是否为偶数。\nfn is_even(n: i32) -> bool {\n    n % 2 == 0\n}\n\nfn main() {\n    // 本关不要求输出，仅为让程序可独立编译运行。\n    let _ = is_even(0);\n}\n\n#[cfg(test)]\nmod tests {\n    use super::*;\n\n    #[test]\n    fn test_even_number() {\n        assert!(is_even(2));\n    }\n\n    #[test]\n    fn test_odd_number() {\n        assert!(!is_even(3));\n    }\n\n    #[test]\n    fn test_zero_is_even() {\n        assert!(is_even(0));\n    }\n}\n',
         explanation: '测试验证函数行为是否正确。',
       },
     ],
@@ -2145,6 +2247,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Sum: 15', description: '迭代器求和' }],
         codeHints: ['let total: i32 = v.iter().sum();', 'println!("Sum: {}", total);'],
         solution: 'Sum: 15',
+        solutionCode: 'fn main() {\n    let v = vec![1, 2, 3, 4, 5];\n    // 用 iter().sum() 求和\n    // iter() 借出每个元素的不可变引用 &i32；\n    // sum() 是消费型适配器，把整个迭代器折叠成一个值。\n    // 这里显式标注累加结果类型为 i32，让 sum() 能推断出目标类型。\n    let total: i32 = v.iter().sum();\n    println!("Sum: {}", total);\n}\n',
         explanation: 'iter().sum() 是便捷的求和方法。',
       },
       {
@@ -2158,6 +2261,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '[2, 4, 6]', description: 'map 转换' }],
         codeHints: ['let doubled: Vec<i32> = v.iter().map(|x| x * 2).collect();', 'println!("{:?}", doubled);'],
         solution: '[2, 4, 6]',
+        solutionCode: 'fn main() {\n    let v = vec![1, 2, 3];\n    // map 是惰性适配器：它不会立刻计算，只是在迭代时逐个转换元素。\n    // 必须用 collect() 驱动整个迭代器，把结果收集成一个新的 Vec。\n    let doubled: Vec<i32> = v.iter().map(|x| x * 2).collect();\n    // {:?} 是 Debug 格式化，Vec 会打印成 [2, 4, 6] 这种形式。\n    println!("{:?}", doubled);\n}\n',
         explanation: 'map 转换每个元素，collect 收集结果。',
       },
       {
@@ -2171,6 +2275,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '[2, 4, 6]', description: 'filter 过滤' }],
         codeHints: ['let even: Vec<&i32> = v.iter().filter(|&&x| x % 2 == 0).collect();', 'println!("{:?}", even);'],
         solution: '[2, 4, 6]',
+        solutionCode: 'fn main() {\n    let v = vec![1, 2, 3, 4, 5, 6];\n    // 过滤偶数：filter 接收一个返回 bool 的闭包，\n    // 注意闭包参数拿到的是 &&i32，所以要用 **x 解引用两次再取模。\n    let evens: Vec<i32> = v.iter().filter(|x| **x % 2 == 0).copied().collect();\n    println!("{:?}", evens);\n}\n',
         explanation: 'filter 保留满足条件的元素。',
       },
       {
@@ -2184,6 +2289,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '220', description: '迭代器链' }],
         codeHints: ['v.iter().filter(|&&x| x % 2 == 0).map(|&x| x * x).sum()'],
         solution: '220',
+        solutionCode: 'fn main() {\n    let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];\n    // 迭代器链：filter 保留偶数 -> map 求平方 -> sum 汇总。\n    // 链上的适配器都是惰性的，直到 sum() 这个消费型适配器出现才真正执行。\n    let total: i32 = v\n        .iter()\n        .filter(|x| **x % 2 == 0)\n        .map(|x| x * x)\n        .sum();\n    println!("{}", total);\n}\n',
         explanation: '迭代器链式调用，一行完成复杂数据处理。',
       },
       {
@@ -2197,6 +2303,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '["ALICE", "CHARLIE"]', description: '迭代器实战' }],
         codeHints: ['names.iter().filter(|n| n.len() > 3).map(|n| n.to_uppercase()).collect()'],
         solution: '["ALICE", "CHARLIE"]',
+        solutionCode: 'fn main() {\n    let names = vec!["Alice", "Bob", "Charlie"];\n    // names.iter() 产生 &&str，先 filter 按长度筛选，再 map 转成大写 String。\n    // to_uppercase() 返回 String，所以 collect 的目标类型是 Vec<String>。\n    let result: Vec<String> = names\n        .iter()\n        .filter(|n| n.len() > 3)\n        .map(|n| n.to_uppercase())\n        .collect();\n    // Debug 打印 Vec<String> 会带上引号：["ALICE", "CHARLIE"]\n    println!("{:?}", result);\n}\n',
         explanation: '迭代器链处理字符串数据。',
       },
     ],
@@ -2249,6 +2356,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '10\n7', description: '闭包基础' }],
         codeHints: ['let double = |x| x * 2;', 'println!("{}", double(5));'],
         solution: '10\n7',
+        solutionCode: 'fn main() {\n    // 闭包是一个可以像函数一样调用的匿名函数,参数写在两根竖线之间\n    let double = |x| x * 2;\n    // 调用闭包和调用普通函数一样,用圆括号传参\n    println!("{}", double(5));\n\n    // 闭包可以接收多个参数,类型由第一次调用推断出来\n    let add = |a, b| a + b;\n    println!("{}", add(3, 4));\n}\n',
         explanation: '|x| x * 2 是闭包，类似匿名函数。',
       },
       {
@@ -2262,6 +2370,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '15', description: '捕获环境' }],
         codeHints: ['let add_x = |y| x + y;', 'println!("{}", add_x(5));'],
         solution: '15',
+        solutionCode: 'fn main() {\n    let x = 10;\n    // 闭包会自动"捕获"外层作用域中的 x(这里是按引用借用)\n    let add_x = |y| x + y;\n    // 调用时需要同时用到捕获的 x 和传入的 y\n    println!("{}", add_x(5));\n}\n',
         explanation: '闭包自动捕获外部变量。',
       },
       {
@@ -2275,6 +2384,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '[4, 8]', description: '闭包迭代器' }],
         codeHints: ['v.iter().filter(|&&x| x % 2 == 0).map(|&x| x * 2).collect()'],
         solution: '[4, 8]',
+        solutionCode: 'fn main() {\n    let v = vec![1, 2, 3, 4, 5];\n    // filter 里的闭包决定"留下哪些元素":保留偶数\n    // map 里的闭包决定"如何变换":每个元素翻倍\n    // collect 把迭代器重新收集成一个 Vec\n    let result: Vec<i32> = v.iter()\n        .filter(|&&n| n % 2 == 0)\n        .map(|&n| n * 2)\n        .collect();\n    // Vec 的 Debug 输出形如 [4, 8]\n    println!("{:?}", result);\n}\n',
         explanation: '闭包是迭代器的常用搭配。',
       },
       {
@@ -2288,6 +2398,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: '10\n15', description: '闭包实战' }],
         codeHints: ['fn apply<F: Fn(i32) -> i32>(f: F, x: i32) -> i32 { f(x) }'],
         solution: '10\n15',
+        solutionCode: '// 泛型参数 F 用 Fn(i32) -> i32 约束:凡是能"被调用"且签名匹配的闭包都能传进来\nfn apply<F: Fn(i32) -> i32>(f: F, x: i32) -> i32 {\n    f(x)\n}\n\nfn main() {\n    // 同一个 apply 可以接收不同的闭包,这就是把行为当参数传递\n    let double = |x| x * 2;\n    let triple = |x| x * 3;\n    println!("{}", apply(double, 5));\n    println!("{}", apply(triple, 5));\n}\n',
         explanation: '泛型 F: Fn 接受闭包参数。',
       },
     ],
@@ -2343,6 +2454,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Value: 42', description: 'Box 基础' }],
         codeHints: ['println!("Value: {}", *x); — * 解引用'],
         solution: 'Value: 42',
+        solutionCode: '// w19-l01: Box 智能指针\n// Box<T> 把数据存放在堆上，本身是一个拥有所有权的智能指针。\nfn main() {\n    // Box::new(42) 在堆上分配一个 i32，栈上只留一个指针。\n    let x = Box::new(42);\n\n    // 解引用：*x 取出堆上的值（Box 实现了 Deref，所以 *x 可用）。\n    let value = *x;\n\n    // 打印解引用后的值。\n    println!("Value: {}", value);\n\n    // 说明：Box 离开作用域时会自动释放堆内存，无需手动 free。\n}\n',
         explanation: 'Box 在堆上分配，* 解引用获取值。',
       },
       {
@@ -2356,6 +2468,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Count: 3', description: 'Rc 引用计数' }],
         codeHints: ['println!("Count: {}", Rc::strong_count(&a));'],
         solution: 'Count: 3',
+        solutionCode: 'use std::rc::Rc;\n\n// w19-l02: Rc 共享所有权\n// Rc<T> 用引用计数允许多个所有者共享同一份只读数据（仅限单线程）。\nfn main() {\n    // 创建第一份 Rc，此时强引用计数为 1。\n    let a = Rc::new(5);\n\n    // Rc::clone 不会深拷贝数据，只是把强引用计数 +1（计数变为 2）。\n    let b = Rc::clone(&a);\n\n    // 再克隆一次，计数变为 3。\n    let c = Rc::clone(&a);\n\n    // Rc::strong_count 读取当前强引用计数；这里 a、b、c 各持有一份，所以是 3。\n    println!("Count: {}", Rc::strong_count(&a));\n\n    // 防止未使用变量告警（b、c 的作用就是各持有一份所有权）。\n    let _ = (&b, &c);\n}\n',
         explanation: 'Rc::clone 增加引用计数，strong_count 查看计数。',
       },
       {
@@ -2369,6 +2482,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Sum: 3', description: '链表求和' }],
         codeHints: ['enum List { Cons(i32, Box<List>), Nil }', 'fn sum_list(list: &List) -> i32 { match list { List::Cons(v, next) => v + sum_list(next), List::Nil => 0 } }'],
         solution: 'Sum: 3',
+        solutionCode: '// w19-l03: 智能指针实战\n// 递归类型无法直接确定大小，必须借助 Box 提供间接层，让编译器知道 List 的大小。\n#[derive(Debug)]\nenum List {\n    // Cons 头结点：存一个 i32，尾巴用 Box 包起来（Box 大小固定）。\n    Cons(i32, Box<List>),\n    // 链表终点。\n    Nil,\n}\n\n// 遍历链表求和：递归地把头结点值与剩余链表之和相加。\nfn sum_list(list: &List) -> i32 {\n    match list {\n        // 用模式匹配取出头和尾；尾是 &Box<List>，解引用得到 &List 继续递归。\n        List::Cons(value, next) => value + sum_list(next),\n        // 空结点贡献 0，作为递归出口。\n        List::Nil => 0,\n    }\n}\n\nfn main() {\n    // 构造 1 -> 2 -> Nil，注意 Box::new 提供了递归所需的间接层。\n    let list = List::Cons(1, Box::new(List::Cons(2, Box::new(List::Nil))));\n    println!("Sum: {}", sum_list(&list));\n}\n',
         explanation: 'Box 递归类型，match 遍历链表。',
       },
     ],
@@ -2431,6 +2545,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Result: 3', description: '多线程计数' }],
         codeHints: ['for _ in 0..3 { let c = Arc::clone(&counter); handles.push(thread::spawn(move || { *c.lock().unwrap() += 1; })); }'],
         solution: 'Result: 3',
+        solutionCode: '// 多线程基础：Arc<Mutex<T>> 是最经典的「多线程共享可变状态」组合。\n// Arc = 原子引用计数，让多个线程都能拥有同一份数据的所有权；\n// Mutex = 互斥锁，保证同一时刻只有一个线程能修改里面的值。\nuse std::sync::{Arc, Mutex};\nuse std::thread;\n\nfn main() {\n    // 计数器被包在 Mutex 里，再被 Arc 包住，这样才能 clone 给多个线程。\n    let counter = Arc::new(Mutex::new(0));\n    let mut handles = vec![];\n\n    // 创建 3 个线程，每个线程把计数器 +1\n    for _ in 0..3 {\n        let counter = Arc::clone(&counter); // 每个线程拿到一份 Arc 克隆\n        let handle = thread::spawn(move || {\n            // lock() 返回 MutexGuard，离开作用域（这里用完即释放）自动解锁\n            let mut num = counter.lock().unwrap();\n            *num += 1;\n        });\n        handles.push(handle);\n    }\n\n    // join 所有线程，等它们全部跑完，主线程才能安全地读结果\n    for handle in handles {\n        handle.join().unwrap();\n    }\n\n    // 读取最终结果：3 个线程各加 1 => 3\n    let result = *counter.lock().unwrap();\n    println!("Result: {}", result);\n}\n',
         explanation: 'Arc<Mutex<T>> 是线程间共享可变数据的标准模式。',
       },
       {
@@ -2444,6 +2559,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Squares: [0, 1, 4, 9, 16]', description: '线程实战' }],
         codeHints: ['for i in 0..5 { handles.push(thread::spawn(move || i * i)); }', 'let results: Vec<i32> = handles.into_iter().map(|h| h.join().unwrap()).collect();'],
         solution: 'Squares: [0, 1, 4, 9, 16]',
+        solutionCode: '// 线程实战：每个线程返回一个值，通过 JoinHandle::join() 把结果取回来。\n// 关键点是 handle 是「有序」的，按创建顺序 join 就能保证结果顺序正确。\nuse std::thread;\n\nfn main() {\n    let mut handles = vec![];\n\n    // 创建 5 个线程，第 i 个线程计算 i * i\n    for i in 0..5u32 {\n        let handle = thread::spawn(move || i * i); // move 把 i 的所有权移入闭包\n        handles.push(handle);\n    }\n\n    // 收集结果：join() 返回 Result<T, _>，unwrap 取出线程的返回值\n    let mut squares = Vec::new();\n    for handle in handles {\n        squares.push(handle.join().unwrap());\n    }\n\n    // Vec 的 Debug 格式正好是 [0, 1, 4, 9, 16]\n    println!("Squares: {:?}", squares);\n}\n',
         explanation: '线程返回值通过 join 获取。',
       },
     ],
@@ -2505,6 +2621,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Data1: data, Data2: data', description: 'async/await' }],
         codeHints: ['async fn fetch_data() -> String { String::from("data") }', 'let (a, b) = tokio::join!(fetch_data(), fetch_data());'],
         solution: 'Data1: data, Data2: data',
+        solutionCode: '// 关键点：async fn 返回的是一个"未来"（Future），本身不会执行。\n// 必须由运行时（这里用 tokio）来驱动它，.await 或 tokio::join! 才会真正跑起来。\n\n// 定义一个异步函数：返回 String。async fn 的返回值会被自动包装成 Future。\nasync fn fetch_data() -> String {\n    // 这里模拟一次"异步取数据"，真实场景中可能是网络 / 文件 IO\n    "data".to_string()\n}\n\n// #[tokio::main] 把普通的 main 变成异步运行时入口（等价于手动 block_on）。\n#[tokio::main]\nasync fn main() {\n    // tokio::join! 并发地等待两个 Future：两个任务会交替推进，而不是先做完一个再做另一个。\n    // 它返回一个元组，元素顺序与传入顺序一致。\n    let (data1, data2) = tokio::join!(fetch_data(), fetch_data());\n\n    // 格式化输出，结果与 expected 完全一致\n    println!("Data1: {}, Data2: {}", data1, data2);\n}\n',
         explanation: 'async/await 是 Rust 异步编程的核心。',
       },
       {
@@ -2518,6 +2635,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'User: Alice, Score: 100', description: '异步实战' }],
         codeHints: ['async fn fetch_user() -> String { String::from("Alice") }', 'async fn fetch_score() -> i32 { 100 }'],
         solution: 'User: Alice, Score: 100',
+        solutionCode: '// 关键点：tokio::join! 可以同时等待"返回类型不同"的多个 Future，\n// 因为它返回的是元组而不是 Vec，每个位置的类型互不影响。\n\n// 异步函数：返回用户名\nasync fn fetch_user() -> String {\n    "Alice".to_string()\n}\n\n// 异步函数：返回分数（i32）\nasync fn fetch_score() -> i32 {\n    100\n}\n\n#[tokio::main]\nasync fn main() {\n    // 并发执行两个不同返回类型的任务，一次性拿到结果\n    let (user, score) = tokio::join!(fetch_user(), fetch_score());\n\n    println!("User: {}, Score: {}", user, score);\n}\n',
         explanation: 'tokio::join! 并发执行多个异步任务。',
       },
     ],
@@ -2572,6 +2690,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Value: 42', description: 'unsafe 基础' }],
         codeHints: ['unsafe { println!("Value: {}", *r); }'],
         solution: 'Value: 42',
+        solutionCode: '// w22-l01: unsafe 基础\n// 关键点：Rust 里裸指针（*mut T / *const T）的创建是安全的，\n// 但解引用必须放进 unsafe 块，由程序员自己保证指针有效。\n// 这里 r 指向栈上的 x，生命周期内始终有效，所以解引用是安全的。\n\nfn main() {\n    let mut x = 42;\n    // 把 &mut x 强制转换成裸指针 *mut i32\n    let r = &mut x as *mut i32;\n\n    // unsafe 块：声明由我负责，此时才允许对 *r 解引用\n    let value = unsafe { *r };\n\n    println!("Value: {}", value);\n}\n',
         explanation: 'unsafe 块允许解引用裸指针。',
       },
       {
@@ -2585,6 +2704,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Value: 42, Abs: 5', description: 'unsafe 实战' }],
         codeHints: ['unsafe { println!("Value: {}, Abs: {}", *r, abs(-5)); }'],
         solution: 'Value: 42, Abs: 5',
+        solutionCode: '// w22-l02: unsafe 实战\n// 关键点：unsafe 块把两种编译器无法验证的操作包在一起：\n//   1) 解引用裸指针 *r\n//   2) 调用 extern "C" 声明的外部 C 函数 abs\n// unsafe 不等于危险，而是正确性由程序员负责。\n\n// 声明来自 C 标准库的函数，Rust 不会检查它的实现\nextern "C" {\n    fn abs(input: i32) -> i32;\n}\n\nfn main() {\n    let mut x = 42;\n    let r = &mut x as *mut i32;\n\n    // 一个 unsafe 块里同时做解引用和 FFI 调用\n    let value = unsafe { *r };\n    let abs_value = unsafe { abs(-5) };\n\n    println!("Value: {}, Abs: {}", value, abs_value);\n}\n',
         explanation: 'unsafe 用于底层操作，应尽量封装在安全 API 中。',
       },
     ],
@@ -2640,6 +2760,7 @@ fn main() {
         codeTestCases: [{ input: '', expected: 'Lines: 3\n1: hello\n2: world\n3: rust', description: '综合实战' }],
         codeHints: ['run 函数内用 lines.collect() 处理数据', 'enum AppError { IoError(String), ParseError(String) }'],
         solution: 'Lines: 3\n1: hello\n2: world\n3: rust',
+        solutionCode: '// w23 综合实战：自定义错误枚举 + Result 传播 + 在 main 里统一兜底\nuse std::fmt;\n\n// 1. 自定义错误类型：用一个枚举区分"不同环节"的失败原因\n#[derive(Debug)]\nenum AppError {\n    IoError(String),\n    ParseError(String),\n}\n\n// 给错误实现 Display，打印时更可读（main 里用的是 Debug，两者都保留）\nimpl fmt::Display for AppError {\n    fn fmt(&self, f: &mut fmt::Formatter<\'_>) -> fmt::Result {\n        match self {\n            AppError::IoError(m) => write!(f, "IO 错误: {}", m),\n            AppError::ParseError(m) => write!(f, "解析错误: {}", m),\n        }\n    }\n}\n\n// 模拟"读取数据"：真实项目里这里是 std::fs::read_to_string(path)\n// 返回 Result，把可能的 IO 失败包装成 IoError\nfn read_data() -> Result<String, AppError> {\n    let raw = "hello\\n\\nworld\\nrust\\n";\n    if raw.is_empty() {\n        return Err(AppError::IoError(String::from("数据源为空")));\n    }\n    Ok(String::from(raw))\n}\n\n// 模拟"解析"：解析失败就返回 ParseError\nfn parse_number(s: &str) -> Result<usize, AppError> {\n    s.trim()\n        .parse::<usize>()\n        .map_err(|_| AppError::ParseError(format!("不是合法数字: {}", s)))\n}\n\n// 2. run 负责真正的业务：读取 -> 处理 -> 输出\nfn run() -> Result<(), AppError> {\n    let data = read_data()?; // ? 遇到 Err 直接把错误往上传给 main\n\n    // 处理：丢掉空行，只保留有效内容\n    let lines: Vec<&str> = data.lines().filter(|l| !l.trim().is_empty()).collect();\n\n    println!("Lines: {}", lines.len());\n    for (i, line) in lines.iter().enumerate() {\n        // 编号从 1 开始\n        println!("{}: {}", i + 1, line.trim());\n    }\n\n    // 再走一次 ParseError 分支：把行数解析回来做校验，出错同样用 ? 上抛\n    let checked = parse_number(&lines.len().to_string())?;\n    debug_assert_eq!(checked, lines.len());\n\n    Ok(())\n}\n\n// 3. main 只做一件事：用 if let Err 统一处理错误\nfn main() {\n    if let Err(e) = run() {\n        eprintln!("Error: {:?}", e);\n        std::process::exit(1);\n    }\n}\n',
         explanation: '综合运用错误处理、数据处理、输出格式化。',
       },
     ],

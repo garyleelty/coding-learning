@@ -7,6 +7,8 @@ interface CodeRunnerProps {
   template: string;
   testCases?: TestCase[];
   hints?: string[];
+  /** 完整可运行的参考实现（「查看答案」按钮展示） */
+  solutionCode?: string;
   onPass?: () => void;
   onFail?: () => void;
   showExpected?: boolean;
@@ -17,6 +19,7 @@ export default function CodeRunner({
   template,
   testCases,
   hints,
+  solutionCode,
   onPass,
   onFail,
   showExpected = true,
@@ -27,6 +30,7 @@ export default function CodeRunner({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [visibleHints, setVisibleHints] = useState(0);
   const [failCount, setFailCount] = useState(0);
+  const [showSolution, setShowSolution] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const expectedOutput = testCases?.[0]?.expected ?? null;
@@ -130,7 +134,17 @@ export default function CodeRunner({
     setErrorMsg(null);
     setFailCount(0);
     setVisibleHints(0);
+    setShowSolution(false);
   }, [template]);
+
+  /** 把参考答案载入编辑器，方便对照、单步实验 */
+  const handleLoadSolution = useCallback(() => {
+    if (!solutionCode) return;
+    setCode(solutionCode);
+    setOutput(null);
+    setStatus('idle');
+    setErrorMsg(null);
+  }, [solutionCode]);
 
   // Line numbers
   const lineCount = code.split('\n').length;
@@ -253,6 +267,38 @@ export default function CodeRunner({
         >
           显示提示 ({visibleHints}/{hints.length})
         </button>
+      )}
+
+      {/* Reference solution */}
+      {solutionCode && (
+        <div className="space-y-3">
+          <button
+            onClick={() => setShowSolution((v) => !v)}
+            className="rounded border border-[#00ff9f]/40 px-4 py-2 font-mono text-xs text-[#00ff9f] transition-colors hover:bg-[#00ff9f]/10 cursor-pointer"
+            aria-expanded={showSolution}
+          >
+            {showSolution ? '收起答案' : '查看答案'}
+          </button>
+
+          {showSolution && (
+            <div className="overflow-hidden rounded-lg border border-[#00ff9f]/25 bg-[#0d1117]">
+              <div className="flex items-center justify-between border-b border-[#00ff9f]/20 bg-[#161b22] px-4 py-2">
+                <span className="font-mono text-xs font-bold text-[#00ff9f]">
+                  参考实现（已通过 rustc 校验）
+                </span>
+                <button
+                  onClick={handleLoadSolution}
+                  className="rounded border border-gray-700 px-3 py-1 font-mono text-xs text-gray-300 transition-colors hover:border-[#00ff9f]/50 cursor-pointer"
+                >
+                  载入到编辑器
+                </button>
+              </div>
+              <pre className="overflow-x-auto p-4 font-mono text-sm leading-relaxed text-[#00ff9f]/90 whitespace-pre">
+                {solutionCode}
+              </pre>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

@@ -44,6 +44,15 @@ export interface Level {
   codeHints?: string[];
   exampleCode?: string;
   exampleOutput?: string;
+  /**
+   * 完整、可直接运行的参考实现（「查看答案」展示）。
+   *
+   * 与 `solution` 的区别：`solution` 只是期望的 stdout，用于判题比对；
+   * `solutionCode` 是一份真正能编译、运行后输出 `solution` 的 Rust 源码。
+   * 仓库里由 scripts/verify_solutions.py 用 rustc 逐个校验，防止写出
+   * 看起来对、实际编译不过的伪代码。
+   */
+  solutionCode?: string;
 }
 
 // Boss challenge

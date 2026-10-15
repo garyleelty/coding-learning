@@ -35,6 +35,16 @@ jobs:
         working-directory: hackrust/frontend
         run: npm ci
 
+      - name: Run unit tests
+        working-directory: hackrust/frontend
+        run: npm run test
+
+      # 每个 code 关卡都必须有一份 rustc 真能编译、输出也对得上的参考实现。
+      # 这挡住两类回归：混入中文弯引号导致示例代码编译失败，
+      # 以及新增关卡时忘了补 solutionCode（issue #1「缺课件」的根因）。
+      - name: Verify every code level has a runnable solution
+        run: python3 scripts/verify_solutions.py
+
       - name: Build
         working-directory: hackrust/frontend
         run: npm run build
