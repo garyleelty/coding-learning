@@ -13,7 +13,11 @@ export async function getWasmInterpreter(): Promise<{ run_code(code: string): In
         '../../../../wasm/code-validator/pkg/code_validator'
       );
       wasmModule = module;
-    })();
+    })().catch((err) => {
+      // A failed chunk load must not be cached: let the next call retry.
+      loading = null;
+      throw err;
+    });
   }
 
   await loading;
@@ -22,6 +26,7 @@ export async function getWasmInterpreter(): Promise<{ run_code(code: string): In
 
 export function preloadWasm(): void {
   if (!wasmModule && !loading) {
-    loading = getWasmInterpreter().then(() => {});
+    // getWasmInterpreter() owns `loading`; warm-up failures are retried on demand.
+    void getWasmInterpreter().catch(() => {});
   }
 }
