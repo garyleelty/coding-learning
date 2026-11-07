@@ -6,13 +6,13 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Live Demo](https://img.shields.io/badge/demo-online-brightgreen.svg)](https://garyleelty.github.io/coding-learning/)
 
-赛博朋克 RPG 风格的交互式 Rust 学习站：**24 个世界 · 7 个阶段 · 121 个关卡**。纯前端 SPA，无后端，通过 GitHub Actions 自动部署到 GitHub Pages。
+赛博朋克 RPG 风格的交互式 Rust 学习站：**24 个世界 · 7 个阶段 · 123 个关卡**（其中 121 个代码关卡）。纯前端 SPA，无后端，通过 GitHub Actions 自动部署到 GitHub Pages。
 
 **在线体验 → https://garyleelty.github.io/coding-learning/**
 
 ## 玩法
 
-- **小关卡**：单选、填空、代码排序、判断正误
+- **关卡类型**：121 个代码关（在编辑器里写 Rust）+ 2 个选择题；`fill / order / judge` 已在类型定义中预留，课件暂未使用
 - **Boss 战**：每个世界一场，在浏览器编辑器里写**真实的 Rust 代码**，编译并执行，输出正确才能对 Boss 造成伤害；答错扣 10 HP
 - **成长系统**：XP / 等级 / HP / 连击 / 连续答对，进度持久化到 `localStorage`
   - 等级公式 `level = floor(sqrt(xp / 100)) + 1`
@@ -20,7 +20,7 @@
 
 ## 课程覆盖
 
-24 个世界分 7 个阶段，从 `变量 → 控制流 → 集合 → 所有权 → 结构体与枚举 → 泛型 / trait / 生命周期 → 错误处理 → 模块与测试 → 迭代器与闭包 → 智能指针 → 并发 → async → unsafe` 一路到综合项目。每个 code 关卡都配有一份能被 `rustc` 真正编译、输出也对得上的参考实现。
+24 个世界分 7 个阶段，从 `变量 → 控制流 → 集合 → 所有权 → 结构体与枚举 → 泛型 / trait / 生命周期 → 错误处理 → 模块与测试 → 迭代器与闭包 → 智能指针 → 并发 → async → unsafe` 一路到综合项目。每个 code 关卡都配有参考实现，CI 用 `rustc` 编译并比对 stdout；其中测试关卡走 `rustc --test`，依赖 tokio 的两关只做静态检查。
 
 ## 技术栈
 
@@ -69,7 +69,7 @@ wasm-pack build --target web --release
 
 ## CI / 部署
 
-推送到 `main` 触发 `.github/workflows/deploy.yml`：安装依赖 → 前端单测 → `scripts/verify_solutions.py` 校验每个 code 关卡都有可运行的参考实现 → 构建 → 部署 GitHub Pages。也可在 Actions 页面手动 `workflow_dispatch`。
+推送到 `main` 触发 `.github/workflows/deploy.yml`：安装依赖 → 前端单测 → `scripts/verify_solutions.py` 校验 121 个代码关卡的参考实现（编译并比对 stdout）→ 构建 → 部署 GitHub Pages。也可在 Actions 页面手动 `workflow_dispatch`。
 
 ## 设计约束
 
